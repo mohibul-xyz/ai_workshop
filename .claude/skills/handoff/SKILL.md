@@ -39,9 +39,15 @@ make clean-state
 Fix everything it reports: stray debug prints, `breakpoint()`, scratch files, `*.orig`,
 an un-updated progress file, failing tests. Remove temporary files you created.
 
-## 6. Commit
-Stage only the files for this feature plus the three state files, then
+## 6. Commit (on the feature branch)
+Check `git branch --show-current` is `feat/<ID>-<slug>`, never `main` (if you are on `main`,
+`git switch -c feat/<ID>-<slug>` first — uncommitted changes move with you). Stage only the
+files for this feature plus the three state files, then
 `git commit -m "<ID>: <what changed> (handoff)"`. A human approves the commit (permissions ask).
 
-## 7. Report to the user
-Three lines: what is done (with evidence), what is next, what needs a human.
+## 7. Open the PR (feature passing only)
+If the feature is now `passing`, run the `open-pr` skill. If it is still `in_progress`, leave
+the commit on the branch; the next session continues there.
+
+## 8. Report to the user
+Three lines: what is done (with evidence and the PR URL, if any), what is next, what needs a human.

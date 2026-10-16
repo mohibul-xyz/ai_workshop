@@ -63,6 +63,8 @@ SessionStart hook ─► prints progress summary, active feature, git status int
        ▼
 Pick ONE feature (WIP = 1) ─► feature_list.json: in_progress, else highest-priority not_started
        │
+Feature branch ────► git switch -c feat/<ID>-<slug> from an up-to-date main (never commit to main)
+       │
 For every tool call:
    permissions (deny → ask → allow) ─► PreToolUse hooks ─► tool runs ─► PostToolUse hooks
    pattern match on the call           code inspects it                  lint / state / audit
@@ -71,7 +73,10 @@ Agent tries to stop ─► Stop hook: code changed and `make check` red? → "ke
        │
 "Done" claim ──────► `make verify` (3 layers) → evidence/Fxx-verify.log + test names in feature_list.json
        │
-handoff skill ─────► claude-progress.md + session-handoff.md + `make clean-state` → commit
+handoff skill ─────► claude-progress.md + session-handoff.md + `make clean-state` → commit on the branch
+       │
+open-pr skill ─────► push branch → `gh pr create --base main` with .github/pull_request_template.md
+                     filled from evidence → a human reviews and merges (maker ≠ checker)
 ```
 
 ### Tools, layer 1: the permission matrix
@@ -126,7 +131,8 @@ All hooks have unit tests that pipe fake tool calls in and assert block/allow
 | [write-migration](.claude/skills/write-migration/SKILL.md) | Sequential Alembic revision, autogenerate review, safe NOT NULL, exact `downgrade()` | `make migrate-check` (static rules + upgrade → downgrade → upgrade on a throwaway DB) |
 | [write-spec](.claude/skills/write-spec/SKILL.md) | Planner role: `specs/<ID>-<slug>.md` with Given/When/Then criteria, then a separate plan | `make lab-spec` (every AC has a `test_ac<N>_*`) |
 | [review-diff](.claude/skills/review-diff/SKILL.md) | Risk scanner + human checklist (scope → behaviour → tests → data → security → reversibility) | accept / revise / block |
-| [handoff](.claude/skills/handoff/SKILL.md) | End-of-session routine | progress + handoff note + `make clean-state` + commit |
+| [handoff](.claude/skills/handoff/SKILL.md) | End-of-session routine | progress + handoff note + `make clean-state` + commit on `feat/<ID>-<slug>` |
+| [open-pr](.claude/skills/open-pr/SKILL.md) | Preconditions, sync with `main`, evidence-based PR body from [the template](.github/pull_request_template.md) | `git push -u` + `gh pr create --base main`; a human merges |
 | [reviewer](.claude/agents/reviewer.md) subagent | Independent, read-only checker (Read/Grep/Glob/Bash) | [evaluator-rubric.md](evaluator-rubric.md) score 0–12 and a verdict |
 
 ### State: continuity across sessions
@@ -201,7 +207,7 @@ topics to a stage, the course lectures it comes from, the artefacts that impleme
 |---|---|---|---|---|---|---|
 | 1 | Understanding AI-generated code | 0 | L1, L9 | `stages/00-…/ai_written/` (11 seeded flaws), `tests_stage0/`, `findings-sheet.md` | `make stage0-check` | bug-proving tests green + findings sheet complete |
 | 2 | CLAUDE.md | 1 | L2–L4 | `CLAUDE.md` router, `AGENTS.md`, `docs/`, `lint_claude_md.py` | `make lab-claude-md` | length, required sections, linked files exist, mirror in sync |
-| 3 | Skills | 2 (+3, 5) | L13 | 4 skills in `.claude/skills/`, `check_migrations.py` | `make migrate-check` | static rules + round-trip on a throwaway DB |
+| 3 | Skills | 2 (+3, 5) | L13 | 5 skills in `.claude/skills/`, `check_migrations.py` | `make migrate-check` | static rules + round-trip on a throwaway DB |
 | 4 | Hooks | 2 (+3–6) | L2, L9, L11 | 7 hooks in `.claude/hooks/`, `audit_report.py` | `make hooks-test` | 25 hook unit tests green |
 | 5 | Permissions | 2 | L2 | `settings.json`, `settings.agent.json`, `permission_sim.py`, `scenarios.json` | `make lab-permissions` | simulator 25/25 |
 | 6 | Human-in-the-loop | 4 | L7, L8 | `approval-checklist.md`, F04 as six commits, `post_state_check` hook | `make check-state` | WIP = 1, F04 `passing` with `evidence/F04-verify.log` |
@@ -291,11 +297,12 @@ and measure**.
 
 ```
 ├── CLAUDE.md  AGENTS.md  docs/        # Instructions (router + on-demand topic docs)
+├── .github/pull_request_template.md   # PR description the open-pr skill fills in
 ├── .claude/
 │   ├── settings.json                  # permission matrix + hook wiring (team-wide)
 │   ├── settings.agent.json            # narrowed allowlist for unattended runs
 │   ├── hooks/                         # 7 hooks + _common.py + tests_hooks/
-│   ├── skills/                        # write-migration, write-spec, review-diff, handoff
+│   ├── skills/                        # write-migration, write-spec, review-diff, handoff, open-pr
 │   └── agents/reviewer.md             # independent checker
 ├── feature_list.json  claude-progress.md  session-handoff.md   # State
 ├── init.sh  Makefile  Dockerfile  Dockerfile.agent  docker-compose.yml  pyproject.toml

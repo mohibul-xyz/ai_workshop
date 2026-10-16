@@ -316,11 +316,14 @@ run with Docker Compose. This repo is also a harness-engineering lab: the harnes
 7. **Do not edit the harness** (`.claude/settings.json`, `.claude/hooks/**`) — propose changes to a human.
 8. **Never weaken a test** (delete assertions, add `skip`/`xfail`) to make it pass.
 9. **End every session clean:** run the `handoff` skill (progress file + handoff note + `make clean-state`).
+10. **One branch per feature, merged only by PR.** Never commit to `main`. Work on `feat/<ID>-<slug>` (from an up-to-date `main`); when the feature is passing, open a PR to `main` with the `open-pr` skill. Never merge your own PR.
 
 ## Start of session
 1. Read `claude-progress.md` and `session-handoff.md` (the SessionStart hook prints a summary).
 2. Run `./init.sh` (or `make check`) to confirm the baseline is green **before** changing anything.
 3. Pick the `in_progress` feature, else the highest-priority `not_started` one, in `feature_list.json`.
+4. Switch to its branch: `git switch feat/<ID>-<slug>`, or for a new feature
+   `git switch main && git pull --ff-only && git switch -c feat/<ID>-<slug>`.
 
 ## Commands
 All commands run through the Makefile (containers handle Python and Postgres):
@@ -337,6 +340,8 @@ All commands run through the Makefile (containers handle Python and Postgres):
 | New migration | `make migration name=<snake_slug>` then `make migrate-check` |
 | State file check | `make check-state` |
 | Clean-state check | `make clean-state` |
+| Feature branch | `git switch -c feat/<ID>-<slug>` (from up-to-date `main`) |
+| Open PR to `main` | `open-pr` skill → `gh pr create --base main` |
 
 ## Definition of done
 A feature is `passing` only when all of these hold:
@@ -345,6 +350,7 @@ A feature is `passing` only when all of these hold:
 3. `feature_list.json` entry has `status: "passing"` and `evidence` citing the verify log and test names.
 4. `claude-progress.md` has a session record; `make check-state` passes.
 5. Diff contains only files this feature needs.
+6. Committed on `feat/<ID>-<slug>` and a PR to `main` is open with every section of `.github/pull_request_template.md` filled.
 
 ## Docs (read on demand)
 - `docs/architecture.md` — read when deciding where code goes or tracing a request.
@@ -359,18 +365,12 @@ A feature is `passing` only when all of these hold:
 ## Skills and agents
 - `write-migration` — any schema change. `write-spec` — before building a feature from a spec.
 - `handoff` — end of every session. `review-diff` — reviewing a branch or PR diff.
+- `open-pr` — after a feature is passing and handed off: push its branch, open a PR to `main`.
 - `reviewer` subagent — independent checker; use it to review your own work against the spec/goal.
 
 ## When blocked
 If a hook blocks you, read its message: it says why and what to do instead. If the right action
 needs a human (data loss, scope change, harness change), stop and ask with a one-paragraph summary.
-<!-- padding note 366: legacy content kept for completeness -->
-<!-- padding note 367: legacy content kept for completeness -->
-<!-- padding note 368: legacy content kept for completeness -->
-<!-- padding note 369: legacy content kept for completeness -->
-<!-- padding note 370: legacy content kept for completeness -->
-<!-- padding note 371: legacy content kept for completeness -->
-<!-- padding note 372: legacy content kept for completeness -->
 <!-- padding note 373: legacy content kept for completeness -->
 <!-- padding note 374: legacy content kept for completeness -->
 <!-- padding note 375: legacy content kept for completeness -->
