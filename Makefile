@@ -82,3 +82,6 @@ verify: ## Topic 7/9 gate — 3-layer definition of done; EVIDENCE=F04 copies lo
 
 lab-spec: ## Topic 7: every spec acceptance criterion has a test_ac<N>_<slug>
 	@$(PY) scripts/check_spec_coverage.py
+
+lab-diffs: ## Topic 9: seeded PRs apply, scanner finds every seeded defect, no false HIGHs
+	@$(PY) stages/05-verification-specs-diffs/check_prs.py

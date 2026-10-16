@@ -1,0 +1,33 @@
+{
+  "_comment": "Seeded defects per PR. scanner_rules must all be found by scripts/review_diff.py (make lab-diffs). human_only defects are NOT detectable by the scanner — participants must find them by reading. Answer key with explanations: facilitator/answers/prs.md",
+  "base_commit_subject": "F05: passing — make verify green, 12/12 ACs covered",
+  "scope": "app/,tests/",
+  "negative_control_subject": "F05: task tags (tags + task_tags, migration 0003, ?tag= filter) + make lab-spec traceability",
+  "prs": {
+    "PR-101.diff": {
+      "scanner_rules": ["sql-fstring", "assertion-removed", "formatting-only"],
+      "human_only": [
+        "search endpoint was never asked for in feature_list.json (scope)",
+        "description claims 'all tests pass' but the new test asserts only the status code",
+        "the removed priority assertion means PATCH priority is no longer verified",
+        "'# noqa' added to config.py silences lint on an unrelated line"
+      ]
+    },
+    "PR-102.diff": {
+      "scanner_rules": ["assertion-weakened", "behaviour-change", "magic-constant"],
+      "human_only": [
+        "'pure refactor' changes default ordering from id ASC to id DESC (breaking per docs/api-conventions.md)",
+        "MAX_TASKS = 99 contradicts its comment 'never return more than 100' (off-by-one) and silently truncates lists",
+        "description says two assertions were made order-independent; three were — and they were not flaky, they caught the ordering change"
+      ]
+    },
+    "PR-103.diff": {
+      "scanner_rules": ["migration-edited", "destructive-migration", "empty-downgrade", "assertion-removed", "todo"],
+      "human_only": [
+        "removing ProjectRead.description is a breaking API change, not housekeeping",
+        "editing 0001 makes fresh databases differ from existing ones (description + index name)",
+        "the claim 'migrations run fine on a fresh database' hides that existing databases lose data"
+      ]
+    }
+  }
+}
