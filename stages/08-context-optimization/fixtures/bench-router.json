@@ -1,0 +1,59 @@
+{
+  "_comment": "ILLUSTRATIVE dry-run data, not measured. Shape matches run_benchmark.sh output.",
+  "runs": [
+    {
+      "variant": "router",
+      "run": 1,
+      "hidden_passed": 7,
+      "hidden_total": 7,
+      "verify_layers_green": 3,
+      "verify": "VERIFY: (fixture) 3/3 layers",
+      "num_turns": 22,
+      "total_cost_usd": 0.51,
+      "duration_ms": 236000,
+      "usage": {
+        "input_tokens": 5250,
+        "cache_creation_input_tokens": 21000,
+        "cache_read_input_tokens": 231000,
+        "output_tokens": 4980
+      },
+      "is_error": false
+    },
+    {
+      "variant": "router",
+      "run": 2,
+      "hidden_passed": 7,
+      "hidden_total": 7,
+      "verify_layers_green": 3,
+      "verify": "VERIFY: (fixture) 3/3 layers",
+      "num_turns": 19,
+      "total_cost_usd": 0.46,
+      "duration_ms": 214000,
+      "usage": {
+        "input_tokens": 5250,
+        "cache_creation_input_tokens": 21000,
+        "cache_read_input_tokens": 199500,
+        "output_tokens": 4710
+      },
+      "is_error": false
+    },
+    {
+      "variant": "router",
+      "run": 3,
+      "hidden_passed": 6,
+      "hidden_total": 7,
+      "verify_layers_green": 2,
+      "verify": "VERIFY: (fixture) 2/3 layers",
+      "num_turns": 25,
+      "total_cost_usd": 0.55,
+      "duration_ms": 260000,
+      "usage": {
+        "input_tokens": 5250,
+        "cache_creation_input_tokens": 21000,
+        "cache_read_input_tokens": 262500,
+        "output_tokens": 5250
+      },
+      "is_error": false
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "_comment": "ILLUSTRATIVE dry-run data, not measured. Shape matches run_benchmark.sh output.",
+  "runs": [
+    {
+      "variant": "no-state",
+      "run": 1,
+      "hidden_passed": 7,
+      "hidden_total": 7,
+      "verify_layers_green": 3,
+      "verify": "VERIFY: (fixture) 3/3 layers",
+      "num_turns": 24,
+      "total_cost_usd": 0.58,
+      "duration_ms": 251000,
+      "usage": {
+        "input_tokens": 5750,
+        "cache_creation_input_tokens": 23000,
+        "cache_read_input_tokens": 276000,
+        "output_tokens": 5160
+      },
+      "is_error": false
+    },
+    {
+      "variant": "no-state",
+      "run": 2,
+      "hidden_passed": 6,
+      "hidden_total": 7,
+      "verify_layers_green": 3,
+      "verify": "VERIFY: (fixture) 3/3 layers",
+      "num_turns": 26,
+      "total_cost_usd": 0.61,
+      "duration_ms": 270000,
+      "usage": {
+        "input_tokens": 5750,
+        "cache_creation_input_tokens": 23000,
+        "cache_read_input_tokens": 299000,
+        "output_tokens": 5340
+      },
+      "is_error": false
+    },
+    {
+      "variant": "no-state",
+      "run": 3,
+      "hidden_passed": 7,
+      "hidden_total": 7,
+      "verify_layers_green": 3,
+      "verify": "VERIFY: (fixture) 3/3 layers",
+      "num_turns": 23,
+      "total_cost_usd": 0.55,
+      "duration_ms": 244000,
+      "usage": {
+        "input_tokens": 5750,
+        "cache_creation_input_tokens": 23000,
+        "cache_read_input_tokens": 264500,
+        "output_tokens": 5070
+      },
+      "is_error": false
+    }
+  ]
+}

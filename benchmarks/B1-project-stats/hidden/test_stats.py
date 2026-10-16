@@ -7,7 +7,9 @@ from fastapi.testclient import TestClient
 
 
 def _task(client: TestClient, project_id: int, status: str) -> int:
-    resp = client.post(f"/api/v1/projects/{project_id}/tasks", json={"title": "t", "status": status})
+    resp = client.post(
+        f"/api/v1/projects/{project_id}/tasks", json={"title": "t", "status": status}
+    )
     assert resp.status_code == 201
     return int(resp.json()["id"])
 

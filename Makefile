@@ -110,3 +110,24 @@ stage0-check: ## Topic 1: bug-proving tests vs ai_written/ (SOLUTION=1: vs solut
 	echo "== tests_stage0 against $$target/"; \
 	$(TOOLS) env STAGE0_TARGET=$$target pytest -p no:cacheprovider -o addopts="" -q $(STAGE0)/tests_stage0 | tail -n 3; \
 	$(PY) scripts/check_findings.py $$sheet
+
+lab-context: ## Topic 10: variants in sync, startup-token report, dry-run A/B/C table (E2E=1: real pipeline, fake agent)
+	@bash stages/08-context-optimization/check_context.sh
+
+benchmark: ## Topic 10 (costs money): VARIANT=bloated|router|hygiene or ABLATE=instructions|verification|state, RUNS=3
+	@bash scripts/run_benchmark.sh $(if $(ABLATE),--ablate $(ABLATE),$(or $(VARIANT),router))
+
+LAB_CHECKS := lab-claude-md lab-permissions hooks-test migrate-check check-state verify lab-spec \
+              lab-diffs lab-loop-dry stage0-check-solution lab-context clean-state
+.PHONY: lab-all stage0-check-solution $(LAB_CHECKS)
+stage0-check-solution:
+	@$(MAKE) -s stage0-check SOLUTION=1
+
+lab-all: ## Run every topic checkpoint (docs/topic-coverage.md) in order and summarise
+	@set -o pipefail; failed=""; \
+	for t in $(LAB_CHECKS); do \
+	  printf '\n\033[1m### make %s\033[0m\n' "$$t"; \
+	  if $(MAKE) -s $$t 2>&1 | grep -vE '^ ?(Container|Network|Volume) '; then :; else failed="$$failed $$t"; fi; \
+	done; \
+	echo; if [ -z "$$failed" ]; then echo "lab-all: all $(words $(LAB_CHECKS)) checkpoints green"; \
+	else echo "lab-all: FAILED:$$failed"; exit 1; fi

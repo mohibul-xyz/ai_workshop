@@ -36,7 +36,7 @@ filterwarnings = ["ignore::DeprecationWarning:starlette.*", "ignore:Using `httpx
 [tool.ruff]
 line-length = 100
 target-version = "py312"
-extend-exclude = ["stages/*/ai_written", "stages/08-context-optimization/variants"]
+extend-exclude = ["stages/*/ai_written", "stages/08-context-optimization/variants", ".worktrees"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP", "S", "BLE"]

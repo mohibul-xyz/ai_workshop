@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(./runs/**)",
+      "Read(./evidence/**)",
+      "Read(./**/*.log)",
+      "Read(./**/*.lock)",
+      "Read(./stages/**/fixtures/**)",
+      "Read(./stages/**/fixtures-human/**)"
+    ]
+  }
+}
