@@ -23,7 +23,9 @@ setup: build ## Build images and create the host .venv (ruff/mypy for hooks)
 build: ## Build docker images
 	$(COMPOSE) --profile tools build
 
-up: ## Start db + migrate + api (http://localhost:8000/docs)
+up: ## Start db, apply migrations, start api (http://localhost:8000/docs)
+	$(COMPOSE) up -d --wait db
+	$(COMPOSE) run --rm -T migrate
 	$(COMPOSE) up -d --wait api
 
 down: ## Stop the stack (keeps the database volume)

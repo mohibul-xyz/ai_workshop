@@ -11,6 +11,10 @@ x-app: &app
     TEST_DATABASE_URL: postgresql+psycopg://taskhub:taskhub@db:5432/taskhub_test
     MIGCHECK_DATABASE_URL: postgresql+psycopg://taskhub:taskhub@db:5432/taskhub_migcheck
     HOME: /tmp
+  # Source is bind-mounted everywhere so migrate/api/tools always run the working tree,
+  # never stale code baked into the image (rebuild only when dependencies change).
+  volumes:
+    - ./:/app
   # Run as the host user so files written into the bind mount (caches, logs) stay editable.
   user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
   depends_on:
@@ -45,8 +49,6 @@ services:
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
     ports:
       - "8000:8000"
-    volumes:
-      - ./:/app
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=2)"]
       interval: 2s
@@ -61,8 +63,6 @@ services:
   tools:
     <<: *app
     profiles: ["tools"]
-    volumes:
-      - ./:/app
     command: ["bash"]
 
   agent:
