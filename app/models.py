@@ -42,6 +42,7 @@ class Task(Base):
         Enum(TaskStatus, name="task_status"), nullable=False, default=TaskStatus.todo
     )
     priority: Mapped[int] = mapped_column(Integer, nullable=False, default=3)
+    due_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), index=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
