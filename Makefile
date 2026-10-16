@@ -85,3 +85,9 @@ lab-spec: ## Topic 7: every spec acceptance criterion has a test_ac<N>_<slug>
 
 lab-diffs: ## Topic 9: seeded PRs apply, scanner finds every seeded defect, no false HIGHs
 	@$(PY) stages/05-verification-specs-diffs/check_prs.py
+
+clean-state: ## End-of-session gate: state, progress, debug leftovers, stray files, check, startup
+	@$(PY) scripts/clean_state_check.py $(if $(FAST),--fast)
+
+audit-report: ## Summarise .claude/audit.log (tools used, blocked commands, files touched)
+	@$(PY) scripts/audit_report.py
