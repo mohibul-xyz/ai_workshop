@@ -17,7 +17,7 @@ def _create(client: TestClient, project_id: int, **fields: object) -> dict[str, 
 def _titles(client: TestClient, project_id: int, **params: object) -> list[str]:
     resp = client.get(f"/api/v1/projects/{project_id}/tasks", params=params)
     assert resp.status_code == 200, resp.text
-    return [t["title"] for t in resp.json()]
+    return [t["title"] for t in resp.json()["items"]]
 
 
 def test_ac1_create_with_tags(client: TestClient, project_id: int) -> None:

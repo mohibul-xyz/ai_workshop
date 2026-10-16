@@ -56,14 +56,14 @@ def test_overdue_true_returns_open_past_due_tasks(client: TestClient, project_id
     _create(client, project_id, title="no-date")
     resp = client.get(f"/api/v1/projects/{project_id}/tasks", params={"overdue": "true"})
     assert resp.status_code == 200
-    assert [t["title"] for t in resp.json()] == ["late", "late-in-progress"]
+    assert [t["title"] for t in resp.json()["items"]] == ["late", "late-in-progress"]
 
 
 def test_overdue_excludes_done_tasks(client: TestClient, project_id: int) -> None:
     past = datetime.now(UTC) - timedelta(days=2)
     _create(client, project_id, title="done-late", due_at=_iso(past), status="done")
     resp = client.get(f"/api/v1/projects/{project_id}/tasks", params={"overdue": "true"})
-    assert resp.json() == []
+    assert resp.json()["items"] == []
 
 
 def test_overdue_false_returns_the_complement(client: TestClient, project_id: int) -> None:
@@ -72,7 +72,7 @@ def test_overdue_false_returns_the_complement(client: TestClient, project_id: in
     _create(client, project_id, title="done-late", due_at=_iso(past), status="done")
     _create(client, project_id, title="no-date")
     resp = client.get(f"/api/v1/projects/{project_id}/tasks", params={"overdue": "false"})
-    assert [t["title"] for t in resp.json()] == ["done-late", "no-date"]
+    assert [t["title"] for t in resp.json()["items"]] == ["done-late", "no-date"]
 
 
 def test_overdue_combines_with_other_filters(client: TestClient, project_id: int) -> None:
@@ -82,7 +82,7 @@ def test_overdue_combines_with_other_filters(client: TestClient, project_id: int
     resp = client.get(
         f"/api/v1/projects/{project_id}/tasks", params={"overdue": "true", "max_priority": 2}
     )
-    assert [t["title"] for t in resp.json()] == ["urgent-late"]
+    assert [t["title"] for t in resp.json()["items"]] == ["urgent-late"]
 
 
 def test_overdue_boundary_due_exactly_now_is_not_overdue(session: Session, project_id: int) -> None:

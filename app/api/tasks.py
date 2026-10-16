@@ -1,13 +1,13 @@
-from collections.abc import Sequence
 from typing import Annotated
 
 from fastapi import APIRouter, HTTPException, Query, Response, status
 
-from app.api.deps import SessionDep
+from app.api.deps import LimitParam, OffsetParam, SessionDep
 from app.models import Task, TaskStatus
-from app.schemas import TAG_PATTERN, TaskCreate, TaskRead, TaskUpdate, normalise_tag
+from app.schemas import TAG_PATTERN, Page, TaskCreate, TaskRead, TaskUpdate, normalise_tag
 from app.services import projects as project_service
 from app.services import tasks as service
+from app.services.pagination import DEFAULT_LIMIT, paginate
 
 router = APIRouter(tags=["tasks"])
 
@@ -34,7 +34,7 @@ def create_task(project_id: int, data: TaskCreate, session: SessionDep) -> Task:
     return service.create_task(session, project_id, data)
 
 
-@router.get("/projects/{project_id}/tasks", response_model=list[TaskRead])
+@router.get("/projects/{project_id}/tasks", response_model=Page[TaskRead])
 def list_tasks(
     project_id: int,
     session: SessionDep,
@@ -42,7 +42,9 @@ def list_tasks(
     max_priority: Annotated[int | None, Query(ge=1, le=5)] = None,
     overdue: bool | None = None,
     tag: str | None = None,
-) -> Sequence[Task]:
+    limit: LimitParam = DEFAULT_LIMIT,
+    offset: OffsetParam = 0,
+) -> dict[str, object]:
     if tag is not None:
         tag = normalise_tag(tag)
         if not TAG_PATTERN.fullmatch(str(tag)):
@@ -51,14 +53,11 @@ def list_tasks(
                 detail="tag must be 1-32 chars of a-z, 0-9 or '-'",
             )
     _require_project(session, project_id)
-    return service.list_tasks(
-        session,
-        project_id,
-        status=status_,
-        max_priority=max_priority,
-        overdue=overdue,
-        tag=tag,
+    stmt = service.tasks_query(
+        project_id, status=status_, max_priority=max_priority, overdue=overdue, tag=tag
     )
+    items, total = paginate(session, stmt, limit, offset)
+    return {"items": items, "total": total, "limit": limit, "offset": offset}
 
 
 @router.get("/tasks/{task_id}", response_model=TaskRead)

@@ -93,3 +93,12 @@ class TaskRead(BaseModel):
     @classmethod
     def _tag_names(cls, value: Any) -> list[str]:
         return sorted(t if isinstance(t, str) else t.name for t in value or [])
+
+
+class Page[ItemT](BaseModel):
+    """F06 list envelope: {"items": [...], "total": N, "limit": L, "offset": O}."""
+
+    items: list[ItemT]
+    total: int
+    limit: int
+    offset: int

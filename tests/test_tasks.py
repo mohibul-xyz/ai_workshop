@@ -52,14 +52,14 @@ def test_filter_by_status(client: TestClient, project_id: int) -> None:
     _create(client, project_id, title="a", status="todo")
     _create(client, project_id, title="b", status="done")
     resp = client.get(f"/api/v1/projects/{project_id}/tasks", params={"status": "done"})
-    assert [t["title"] for t in resp.json()] == ["b"]
+    assert [t["title"] for t in resp.json()["items"]] == ["b"]
 
 
 def test_filter_by_max_priority_is_inclusive(client: TestClient, project_id: int) -> None:
     for p in (1, 2, 3, 4):
         _create(client, project_id, title=f"p{p}", priority=p)
     resp = client.get(f"/api/v1/projects/{project_id}/tasks", params={"max_priority": 2})
-    assert [t["title"] for t in resp.json()] == ["p1", "p2"]
+    assert [t["title"] for t in resp.json()["items"]] == ["p1", "p2"]
 
 
 def test_filters_combine(client: TestClient, project_id: int) -> None:
@@ -69,7 +69,7 @@ def test_filters_combine(client: TestClient, project_id: int) -> None:
     resp = client.get(
         f"/api/v1/projects/{project_id}/tasks", params={"status": "todo", "max_priority": 2}
     )
-    assert [t["title"] for t in resp.json()] == ["hit"]
+    assert [t["title"] for t in resp.json()["items"]] == ["hit"]
 
 
 def test_invalid_status_filter_422(client: TestClient, project_id: int) -> None:

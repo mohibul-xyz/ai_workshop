@@ -1,11 +1,10 @@
-from collections.abc import Sequence
-
 from fastapi import APIRouter, HTTPException, status
 
-from app.api.deps import SessionDep
+from app.api.deps import LimitParam, OffsetParam, SessionDep
 from app.models import Project
-from app.schemas import ProjectCreate, ProjectRead
+from app.schemas import Page, ProjectCreate, ProjectRead
 from app.services import projects as service
+from app.services.pagination import DEFAULT_LIMIT, paginate
 
 router = APIRouter(prefix="/projects", tags=["projects"])
 
@@ -21,9 +20,12 @@ def create_project(data: ProjectCreate, session: SessionDep) -> Project:
         ) from None
 
 
-@router.get("", response_model=list[ProjectRead])
-def list_projects(session: SessionDep) -> Sequence[Project]:
-    return service.list_projects(session)
+@router.get("", response_model=Page[ProjectRead])
+def list_projects(
+    session: SessionDep, limit: LimitParam = DEFAULT_LIMIT, offset: OffsetParam = 0
+) -> dict[str, object]:
+    items, total = paginate(session, service.projects_query(), limit, offset)
+    return {"items": items, "total": total, "limit": limit, "offset": offset}
 
 
 @router.get("/{project_id}", response_model=ProjectRead)

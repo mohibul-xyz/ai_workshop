@@ -99,12 +99,18 @@
       "area": "api",
       "title": "Pagination on list endpoints",
       "user_visible_behavior": "List endpoints accept limit/offset and return {items,total,limit,offset} as defined in docs/api-conventions.md.",
-      "status": "not_started",
+      "status": "passing",
       "verification": [
         "make verify"
       ],
-      "evidence": [],
-      "notes": "Autonomous loop (topic 8): goals/F06-pagination.goal.md."
+      "evidence": [
+        "evidence/F06-verify.log",
+        "tests/test_pagination.py::test_envelope_and_defaults",
+        "tests/test_pagination.py::test_limit_bounds",
+        "tests/test_pagination.py::test_total_counts_filtered_rows_before_paging",
+        "tests/test_pagination.py::test_pages_are_stable_and_ordered_by_id"
+      ],
+      "notes": "Reference build for the autonomous-loop goal (goals/F06-pagination.goal.md). Workshop: reset F06 to not_started and let the loop build it."
     }
   ]
 }

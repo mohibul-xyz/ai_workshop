@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from datetime import UTC, datetime
 
-from sqlalchemy import ColumnElement, and_, not_, select
+from sqlalchemy import ColumnElement, Select, and_, not_, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
@@ -30,15 +30,15 @@ def create_task(session: Session, project_id: int, data: TaskCreate) -> Task:
     return task
 
 
-def list_tasks(
-    session: Session,
+def tasks_query(
     project_id: int,
     status: TaskStatus | None = None,
     max_priority: int | None = None,
     overdue: bool | None = None,
     tag: str | None = None,
     now: datetime | None = None,
-) -> Sequence[Task]:
+) -> Select[Task]:
+    """Filtered, id-ordered task query; filters combine with AND (F03-F05)."""
     stmt = select(Task).where(Task.project_id == project_id)
     if status is not None:
         stmt = stmt.where(Task.status == status)
@@ -49,7 +49,21 @@ def list_tasks(
         stmt = stmt.where(is_overdue if overdue else not_(is_overdue))
     if tag is not None:
         stmt = stmt.where(Task.tags.any(Tag.name == tag))
-    return session.scalars(stmt.order_by(Task.id)).all()
+    return stmt.order_by(Task.id)
+
+
+def list_tasks(
+    session: Session,
+    project_id: int,
+    status: TaskStatus | None = None,
+    max_priority: int | None = None,
+    overdue: bool | None = None,
+    tag: str | None = None,
+    now: datetime | None = None,
+) -> Sequence[Task]:
+    """All matching tasks (no paging) — for internal callers and tests."""
+    stmt = tasks_query(project_id, status, max_priority, overdue, tag, now)
+    return session.scalars(stmt).all()
 
 
 def overdue_clause(now: datetime) -> ColumnElement[bool]:

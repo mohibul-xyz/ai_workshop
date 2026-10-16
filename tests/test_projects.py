@@ -22,7 +22,7 @@ def test_duplicate_project_name_returns_409(client: TestClient) -> None:
 def test_list_projects_in_creation_order(client: TestClient) -> None:
     for name in ("One", "Two"):
         client.post("/api/v1/projects", json={"name": name})
-    names = [p["name"] for p in client.get("/api/v1/projects").json()]
+    names = [p["name"] for p in client.get("/api/v1/projects").json()["items"]]
     assert names[-2:] == ["One", "Two"]
 
 
