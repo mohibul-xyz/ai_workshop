@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Layer 3 (system) smoke test: exercise the real running stack over HTTP. Stdlib only.
 
-Always checks the baseline (health, F01–F03, request ids). For F04–F06 it checks the
+Always checks the baseline (health, F01–F03, request ids). For F04–F07 it checks the
 behaviour of every feature that feature_list.json claims is `passing` — so a false
 "passing" claim fails verification here, against real Postgres.
 
@@ -157,6 +157,22 @@ def f06(pid: int) -> None:
     check("F06 limit=0 → 422", s == 422, body)
 
 
+def f07(pid: int) -> None:
+    for title in ("Find the NEEDLE", "needle_x", "hay eYx"):  # "eYx" would match a wildcard "_"
+        call("POST", f"/api/v1/projects/{pid}/tasks", {"title": title})
+    s, body, _ = call("GET", f"/api/v1/projects/{pid}/tasks?q=needle")
+    check(
+        "F07 q=needle (case-insensitive)",
+        s == 200 and [t["title"] for t in items(body)] == ["Find the NEEDLE", "needle_x"],
+        body,
+    )
+    s, body, _ = call("GET", f"/api/v1/projects/{pid}/tasks?q=e_x")
+    titles = [t["title"] for t in items(body)] if s == 200 else []
+    check("F07 q=e_x matches '_' literally", titles == ["needle_x"], body)
+    s, body, _ = call("GET", f"/api/v1/projects/{pid}/tasks?q=")
+    check("F07 empty q → 422", s == 422, body)
+
+
 def main() -> int:
     global BASE
     ap = argparse.ArgumentParser()
@@ -168,7 +184,7 @@ def main() -> int:
             pid = baseline()
             feats = json.loads((ROOT / "feature_list.json").read_text())["features"]
             passing = {f["id"] for f in feats if f["status"] == "passing"}
-            for fid, fn in (("F04", f04), ("F05", f05), ("F06", f06)):
+            for fid, fn in (("F04", f04), ("F05", f05), ("F06", f06), ("F07", f07)):
                 if fid in passing:
                     fn(pid)
         except (KeyError, TypeError, ValueError) as exc:

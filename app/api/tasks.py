@@ -11,6 +11,8 @@ from app.services.pagination import DEFAULT_LIMIT, paginate
 
 router = APIRouter(tags=["tasks"])
 
+MAX_QUERY_LENGTH = 200  # F07: ?q= is 1-200 chars after trimming (the title column's limit)
+
 
 def _require_task(session: SessionDep, task_id: int) -> Task:
     task = service.get_task(session, task_id)
@@ -42,6 +44,7 @@ def list_tasks(
     max_priority: Annotated[int | None, Query(ge=1, le=5)] = None,
     overdue: bool | None = None,
     tag: str | None = None,
+    q: Annotated[str | None, Query(description="Case-insensitive title substring")] = None,
     limit: LimitParam = DEFAULT_LIMIT,
     offset: OffsetParam = 0,
 ) -> dict[str, object]:
@@ -52,9 +55,16 @@ def list_tasks(
                 status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
                 detail="tag must be 1-32 chars of a-z, 0-9 or '-'",
             )
+    if q is not None:
+        q = q.strip()
+        if not 1 <= len(q) <= MAX_QUERY_LENGTH:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+                detail=f"q must be 1-{MAX_QUERY_LENGTH} characters after trimming",
+            )
     _require_project(session, project_id)
     stmt = service.tasks_query(
-        project_id, status=status_, max_priority=max_priority, overdue=overdue, tag=tag
+        project_id, status=status_, max_priority=max_priority, overdue=overdue, tag=tag, q=q
     )
     items, total = paginate(session, stmt, limit, offset)
     return {"items": items, "total": total, "limit": limit, "offset": offset}

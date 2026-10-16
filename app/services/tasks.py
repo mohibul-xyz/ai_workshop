@@ -36,9 +36,10 @@ def tasks_query(
     max_priority: int | None = None,
     overdue: bool | None = None,
     tag: str | None = None,
+    q: str | None = None,
     now: datetime | None = None,
 ) -> Select[Task]:
-    """Filtered, id-ordered task query; filters combine with AND (F03-F05)."""
+    """Filtered, id-ordered task query; filters combine with AND (F03-F05, F07)."""
     stmt = select(Task).where(Task.project_id == project_id)
     if status is not None:
         stmt = stmt.where(Task.status == status)
@@ -49,7 +50,14 @@ def tasks_query(
         stmt = stmt.where(is_overdue if overdue else not_(is_overdue))
     if tag is not None:
         stmt = stmt.where(Task.tags.any(Tag.name == tag))
+    if q is not None:
+        stmt = stmt.where(Task.title.ilike(f"%{escape_like(q)}%", escape="\\"))
     return stmt.order_by(Task.id)
+
+
+def escape_like(value: str) -> str:
+    """Make `\\`, `%` and `_` match literally inside a LIKE pattern (F07 AC4)."""
+    return value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
 
 
 def list_tasks(
@@ -59,10 +67,11 @@ def list_tasks(
     max_priority: int | None = None,
     overdue: bool | None = None,
     tag: str | None = None,
+    q: str | None = None,
     now: datetime | None = None,
 ) -> Sequence[Task]:
     """All matching tasks (no paging) — for internal callers and tests."""
-    stmt = tasks_query(project_id, status, max_priority, overdue, tag, now)
+    stmt = tasks_query(project_id, status, max_priority, overdue, tag, q, now)
     return session.scalars(stmt).all()
 
 

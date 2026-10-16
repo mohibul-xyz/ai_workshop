@@ -111,6 +111,28 @@
         "tests/test_pagination.py::test_pages_are_stable_and_ordered_by_id"
       ],
       "notes": "Reference build for the autonomous-loop goal (goals/F06-pagination.goal.md). Workshop: reset F06 to not_started and let the loop build it."
+    },
+    {
+      "id": "F07",
+      "priority": 7,
+      "area": "tasks",
+      "title": "Search tasks by title",
+      "user_visible_behavior": "GET .../tasks?q=foo returns tasks whose title contains foo (case-insensitive).",
+      "status": "passing",
+      "verification": [
+        "make lab-spec",
+        "make verify"
+      ],
+      "evidence": [
+        "evidence/F07-verify.log",
+        "specs/F07-task-search.md",
+        "tests/test_search.py::test_ac1_search_matches_title_substring",
+        "tests/test_search.py::test_ac4_search_treats_wildcards_literally",
+        "tests/test_search.py::test_ac7_search_combines_with_other_filters",
+        "tests/test_search.py::test_ac8_search_applies_before_pagination",
+        "tests/test_search.py::test_ac10_empty_search_rejected"
+      ],
+      "notes": "Spec-driven (spec -> plan -> tests -> code -> reviewer). make lab-spec: 13/13 ACs have a test_ac<N> test; 11 failed before the change (AC12/AC13 are regression guards). No migration. Smoke e2e covers q match, literal '_' and empty q -> 422."
     }
   ]
 }
