@@ -35,6 +35,10 @@ make help           # list every target
 
 The API runs at http://localhost:8000/docs once `make up` (or `./init.sh`) has run.
 
+**Building a new feature?** Follow [examples/F08-example.md](examples/F08-example.md): a
+step-by-step walkthrough from session start to a PR on `main`, with the prompt, the harness
+action and the gate at each step.
+
 ---
 
 ## How the harness works
