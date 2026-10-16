@@ -8,6 +8,8 @@ Everything the project knows is imported below so you never have to look elsewhe
 @docs/architecture.md
 @docs/database-rules.md
 @docs/testing-standards.md
+@docs/topic-coverage.md
+@docs/version-notes.md
 @README.md
 @claude-progress.md
 @evaluator-rubric.md
@@ -362,8 +364,6 @@ A feature is `passing` only when all of these hold:
 ## When blocked
 If a hook blocks you, read its message: it says why and what to do instead. If the right action
 needs a human (data loss, scope change, harness change), stop and ask with a one-paragraph summary.
-<!-- padding note 364: legacy content kept for completeness -->
-<!-- padding note 365: legacy content kept for completeness -->
 <!-- padding note 366: legacy content kept for completeness -->
 <!-- padding note 367: legacy content kept for completeness -->
 <!-- padding note 368: legacy content kept for completeness -->
