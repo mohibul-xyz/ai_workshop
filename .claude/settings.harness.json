@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "defaultMode": "default",
+    "disableBypassPermissionsMode": "disable",
+    "allow": [
+      "Read(./app/**)",
+      "Read(./tests/**)",
+      "Read(./docs/**)",
+      "Read(./migrations/**)",
+      "Read(./specs/**)",
+      "Read(./goals/**)",
+      "Read(./stages/**)",
+      "Read(./scripts/**)",
+      "Edit(./app/**)",
+      "Edit(./tests/**)",
+      "Edit(./docs/**)",
+      "Edit(./specs/**)",
+      "Edit(./feature_list.json)",
+      "Edit(./claude-progress.md)",
+      "Edit(./session-handoff.md)",
+      "Bash(make test)",
+      "Bash(make lint)",
+      "Bash(make typecheck)",
+      "Bash(make check)",
+      "Bash(make verify)",
+      "Bash(make check-state)",
+      "Bash(make migrate-check)",
+      "Bash(make clean-state)",
+      "Bash(make hooks-test)",
+      "Bash(make lab-*)",
+      "Bash(make logs)",
+      "Bash(make help)",
+      "Bash(git status)",
+      "Bash(git status *)",
+      "Bash(git diff)",
+      "Bash(git diff *)",
+      "Bash(git log)",
+      "Bash(git log *)",
+      "Bash(git show *)",
+      "Bash(python3 scripts/*)"
+    ],
+    "ask": [
+      "Edit(./migrations/**)",
+      "Edit(./pyproject.toml)",
+      "Edit(./docker-compose.yml)",
+      "Edit(./Dockerfile)",
+      "Edit(./Dockerfile.agent)",
+      "Edit(./Makefile)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(docker compose up *)",
+      "Bash(docker compose exec *)",
+      "Bash(docker compose run *)",
+      "Bash(alembic *)",
+      "Bash(pip install *)",
+      "Bash(make migration *)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./secrets/**)",
+      "Read(./benchmarks/**/hidden/**)",
+      "Edit(./.env)",
+      "Edit(./.env.*)",
+      "Edit(./.claude/settings.json)",
+      "Edit(./.claude/hooks/**)",
+      "Edit(./benchmarks/**/hidden/**)",
+      "Bash(curl *)",
+      "Bash(wget *)",
+      "Bash(sudo *)",
+      "Bash(git push --force *)",
+      "Bash(git push -f *)",
+      "Bash(git reset --hard *)",
+      "Bash(cat .env*)",
+      "Bash(cat ./.env*)",
+      "WebFetch"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          { "type": "command", "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/session_start.py" }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          { "type": "command", "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard_bash.py" }
+        ]
+      },
+      {
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit",
+        "hooks": [
+          { "type": "command", "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard_files.py" }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          { "type": "command", "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/post_edit_lint.py" },
+          { "type": "command", "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/post_state_check.py" }
+        ]
+      },
+      {
+        "matcher": "*",
+        "hooks": [
+          { "type": "command", "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/audit_log.py" }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          { "type": "command", "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/stop_gate.py", "timeout": 300 }
+        ]
+      }
+    ]
+  }
+}
