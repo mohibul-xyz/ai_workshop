@@ -102,3 +102,11 @@ lab-loop-dry: ## Topic 8: maker-checker loop replayed from fixtures; all stop co
 
 goal-loop: ## Topic 8 (costs money): run the F06 goal loop for real — GOAL=… BUDGET_USD=… RUNNER=docker|local
 	@bash scripts/run_goal_loop.sh
+
+STAGE0 := stages/00-baseline-reading-ai-code
+stage0-check: ## Topic 1: bug-proving tests vs ai_written/ (SOLUTION=1: vs solutions/) + findings sheet
+	@set -eo pipefail; target=$(if $(SOLUTION),solutions,ai_written); \
+	sheet=$(if $(SOLUTION),facilitator/answers/stage0-findings.md,$(STAGE0)/findings-sheet.md); \
+	echo "== tests_stage0 against $$target/"; \
+	$(TOOLS) env STAGE0_TARGET=$$target pytest -p no:cacheprovider -o addopts="" -q $(STAGE0)/tests_stage0 | tail -n 3; \
+	$(PY) scripts/check_findings.py $$sheet
