@@ -15,6 +15,7 @@ Exit code: 1 if any HIGH finding, else 0.
 from __future__ import annotations
 
 import argparse
+import difflib
 import json
 import re
 import subprocess
@@ -97,6 +98,21 @@ def _norm(line: str) -> str:
     return re.sub(r"[\s'\",()]|#\s*noqa\S*", "", line)
 
 
+LOOSENERS = ("sorted(", " in ", ">=", "<=", "len(", "any(", "is not None")
+
+
+def _tokens(line: str) -> set[str]:
+    return set(re.findall(r"[A-Za-z_][A-Za-z0-9_]*|\d+|\"[^\"]*\"|'[^']*'", line))
+
+
+def _similar(a: str, b: str) -> float:
+    return difflib.SequenceMatcher(None, _norm(a), _norm(b)).ratio()
+
+
+def _weakens(old: str, new: str) -> bool:
+    return any(w in new and w not in old for w in LOOSENERS)
+
+
 SQL_WORDS = re.compile(
     r"\b(SELECT\s|INSERT\s+INTO|UPDATE\s+\w+\s+SET|DELETE\s+FROM|WHERE\s|I?LIKE\s|ORDER\s+BY)", re.I
 )
@@ -155,15 +171,36 @@ def scan(files: list[FileDiff], scope: list[str]) -> list[Finding]:
                 ):
                     add(HIGH, "test-deleted", f, n, "test function removed", t)
             for n, t in removed_asserts:
-                if _norm(t) not in {_norm(a) for a in added_asserts}:
-                    weaker = any("sorted(" in a and "sorted(" not in t for a in added_asserts)
-                    rule = "assertion-weakened" if weaker else "assertion-removed"
+                if _norm(t) in {_norm(a) for a in added_asserts}:
+                    continue
+                best = max(added_asserts, key=lambda a: _similar(t, a), default="")
+                if best and _similar(t, best) >= 0.6 and _weakens(t, best):
                     add(
                         HIGH,
-                        rule,
+                        "assertion-weakened",
                         f,
                         n,
-                        "assertion removed or rewritten — does the test still prove the behaviour?",
+                        "assertion loosened (sorted/in/>=/len) — it may no longer catch the "
+                        "bug it was written for",
+                        f"{t.strip()}  →  {best.strip()}",
+                    )
+                elif best and _similar(t, best) >= 0.8 and _tokens(t) <= _tokens(best):
+                    add(
+                        MED,
+                        "assertion-rewritten",
+                        f,
+                        n,
+                        "assertion reshaped but keeps every original check — confirm only the "
+                        "response shape changed",
+                        f"{t.strip()}  →  {best.strip()}",
+                    )
+                else:
+                    add(
+                        HIGH,
+                        "assertion-removed",
+                        f,
+                        n,
+                        "assertion removed — does the test still prove the behaviour?",
                         t,
                     )
             for n, t in f.added:
