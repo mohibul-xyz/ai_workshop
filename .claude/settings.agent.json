@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "_comment": "Narrowed allowlist for unattended runs (scripts/run_goal_loop.sh passes it with --settings). Project .claude/settings.json deny rules and hooks still apply. Anything not allowed here is refused in -p mode — the agent cannot stop to ask.",
+  "permissions": {
+    "allow": [
+      "Read(./app/**)",
+      "Read(./tests/**)",
+      "Read(./docs/**)",
+      "Read(./goals/**)",
+      "Read(./specs/**)",
+      "Read(./runs/loop-*/loop-state.md)",
+      "Edit(./app/**)",
+      "Edit(./tests/**)",
+      "Edit(./feature_list.json)",
+      "Edit(./claude-progress.md)",
+      "Edit(./session-handoff.md)",
+      "Bash(make test)",
+      "Bash(make lint)",
+      "Bash(make typecheck)",
+      "Bash(make check)",
+      "Bash(make check-state)",
+      "Bash(make lab-*)",
+      "Bash(git status)",
+      "Bash(git status *)",
+      "Bash(git diff)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(python3 scripts/review_diff.py *)",
+      "Bash(python3 scripts/check_state.py)"
+    ],
+    "deny": [
+      "Edit(./migrations/**)",
+      "Edit(./pyproject.toml)",
+      "Edit(./docker-compose.yml)",
+      "Edit(./Dockerfile*)",
+      "Edit(./Makefile)",
+      "Edit(./scripts/**)",
+      "Edit(./goals/**)",
+      "Edit(./.claude/**)",
+      "Bash(git push *)",
+      "Bash(docker *)",
+      "Bash(pip *)",
+      "Bash(curl *)",
+      "Bash(wget *)",
+      "WebFetch",
+      "WebSearch"
+    ]
+  }
+}

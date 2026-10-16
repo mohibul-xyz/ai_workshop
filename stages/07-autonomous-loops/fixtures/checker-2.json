@@ -1,0 +1,3 @@
+{"type": "result", "subtype": "success", "is_error": false, "duration_ms": 87000, "num_turns": 7, "session_id": "fixture-checker-2", "total_cost_usd": 0.27,
+ "usage": {"input_tokens": 11800, "cache_creation_input_tokens": 1200, "cache_read_input_tokens": 91000, "output_tokens": 1800},
+ "result": "VERDICT: accept\nCRITERIA:\n  limit/offset accepted ✅\n  limit bounds 1-100 → 422 ✅ tests/test_pagination.py::test_limit_bounds\n  envelope + total before pagination ✅\n  order id ASC stable across pages ✅\nVERIFY: static=pass behaviour=pass system=pass (log: runs/verify-…)\nFINDINGS:\n  - none blocking\nRUBRIC: correctness=2 verification=2 scope=2 reliability=2 maintainability=2 handoff=2 total=12"}

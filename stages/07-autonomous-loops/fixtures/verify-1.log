@@ -1,0 +1,11 @@
+=== Layer: static ===
+=== Layer: behaviour ===
+=== Layer: system ===
+  PASS  GET /health → 200 ok
+  PASS  F06 envelope {items,total,limit,offset}
+  PASS  F06 limit honoured
+  FAIL  F06 limit=0 → 422                    {'items': [], 'total': 3, 'limit': 0, 'offset': 0}
+smoke_e2e: 3/4 checks passed against http://localhost:8100
+
+VERIFY: static=pass behaviour=pass system=FAIL
+RESULT: FAIL at layer 'system' — not done. Fix it and rerun make verify.

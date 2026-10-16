@@ -1,0 +1,3 @@
+{"type": "result", "subtype": "success", "is_error": false, "duration_ms": 61000, "num_turns": 6, "session_id": "fixture-human-1", "total_cost_usd": 0.22,
+ "usage": {"input_tokens": 9000, "cache_creation_input_tokens": 4000, "cache_read_input_tokens": 30000, "output_tokens": 900},
+ "result": "docs/api-conventions.md says list endpoints return an envelope, but changing GET /projects from a list to an envelope breaks existing clients and no version bump is described.\nNEEDS_HUMAN: confirm the breaking response-shape change for GET /api/v1/projects is approved"}

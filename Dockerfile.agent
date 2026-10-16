@@ -1,0 +1,16 @@
+# Sandboxed Claude Code for autonomous loops (Stage 7, topic 8).
+# Same Python toolchain as the app image + Node + a PINNED Claude Code CLI, run as non-root.
+# Flags and settings change between CLI versions — bump deliberately and re-run `make lab-loop-dry`.
+FROM taskhub:dev
+
+ARG CLAUDE_CODE_VERSION=2.1.300
+USER root
+RUN apt-get update && apt-get install -y --no-install-recommends nodejs npm ca-certificates \
+    && npm install -g "@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}" \
+    && npm cache clean --force && rm -rf /var/lib/apt/lists/* \
+    && useradd --create-home --uid 1000 agent || true
+
+ENV IN_CONTAINER=1
+USER 1000
+WORKDIR /work
+ENTRYPOINT ["claude"]

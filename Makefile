@@ -5,7 +5,12 @@ SHELL := /bin/bash
 export HOST_UID := $(shell id -u)
 export HOST_GID := $(shell id -g)
 COMPOSE ?= docker compose
+# Inside the sandboxed agent container (IN_CONTAINER=1) tools run directly, not via docker.
+ifeq ($(IN_CONTAINER),1)
+TOOLS   :=
+else
 TOOLS   := $(COMPOSE) --profile tools run --rm -T tools
+endif
 PY      ?= python3
 VENV    := .venv
 
@@ -91,3 +96,9 @@ clean-state: ## End-of-session gate: state, progress, debug leftovers, stray fil
 
 audit-report: ## Summarise .claude/audit.log (tools used, blocked commands, files touched)
 	@$(PY) scripts/audit_report.py
+
+lab-loop-dry: ## Topic 8: maker-checker loop replayed from fixtures; all stop conditions fire
+	@bash stages/07-autonomous-loops/check_loop.sh
+
+goal-loop: ## Topic 8 (costs money): run the F06 goal loop for real — GOAL=… BUDGET_USD=… RUNNER=docker|local
+	@bash scripts/run_goal_loop.sh

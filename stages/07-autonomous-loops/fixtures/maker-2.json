@@ -1,0 +1,3 @@
+{"type": "result", "subtype": "success", "is_error": false, "duration_ms": 188000, "num_turns": 14, "session_id": "fixture-maker-2", "total_cost_usd": 0.52,
+ "usage": {"input_tokens": 22800, "cache_creation_input_tokens": 3900, "cache_read_input_tokens": 260100, "output_tokens": 4100},
+ "result": "Fixed limit bounds (ge=1, le=100) on both endpoints and added tests for limit=0, limit=101, offset=-1 and offset past the end. make check green; evidence updated.\nGOAL_DONE"}

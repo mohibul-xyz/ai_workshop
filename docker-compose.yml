@@ -29,7 +29,7 @@ services:
       POSTGRES_PASSWORD: taskhub
       POSTGRES_DB: taskhub
     ports:
-      - "5432:5432"
+      - "${DB_PORT:-5432}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./db/init:/docker-entrypoint-initdb.d:ro
@@ -48,7 +48,7 @@ services:
     <<: *app
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
     ports:
-      - "8000:8000"
+      - "${API_PORT:-8000}:8000"
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=2)"]
       interval: 2s
@@ -66,19 +66,29 @@ services:
     command: ["bash"]
 
   agent:
+    # Sandboxed Claude Code for autonomous loops (Stage 7). Only the loop's sandbox clone is
+    # mounted: no docker socket, no host home directory, no other repos. It reaches Postgres
+    # over the compose network and runs tools directly (IN_CONTAINER=1 in the Makefile).
     profiles: ["agent"]
     build:
       context: .
       dockerfile: Dockerfile.agent
     image: taskhub-agent:dev
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
     environment:
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
-      GOAL_WORKTREE: /work
+      IN_CONTAINER: "1"
+      HOME: /tmp/agent-home
+      DATABASE_URL: postgresql+psycopg://taskhub:taskhub@db:5432/taskhub
+      TEST_DATABASE_URL: postgresql+psycopg://taskhub:taskhub@db:5432/taskhub_test
+      MIGCHECK_DATABASE_URL: postgresql+psycopg://taskhub:taskhub@db:5432/taskhub_migcheck
+      HARNESS_STOP_CHECK: make check
     volumes:
-      # Only the loop's worktree is mounted; no docker socket, no home directory.
-      - ${GOAL_WORKTREE:-./.worktrees/goal}:/work
+      - ${GOAL_SANDBOX:-./.worktrees/none}:/work
     working_dir: /work
-    network_mode: bridge
+    depends_on:
+      db:
+        condition: service_healthy
 
 volumes:
   pgdata:
