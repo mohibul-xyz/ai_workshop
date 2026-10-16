@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
 
 from app.models import TaskStatus
 
@@ -24,6 +24,7 @@ class TaskCreate(BaseModel):
     description: str | None = None
     status: TaskStatus = TaskStatus.todo
     priority: int = Field(default=3, ge=1, le=5)
+    due_at: AwareDatetime | None = None
 
 
 class TaskUpdate(BaseModel):
@@ -31,6 +32,7 @@ class TaskUpdate(BaseModel):
     description: str | None = None
     status: TaskStatus | None = None
     priority: int | None = Field(default=None, ge=1, le=5)
+    due_at: AwareDatetime | None = None
 
 
 class TaskRead(BaseModel):
@@ -42,5 +44,6 @@ class TaskRead(BaseModel):
     description: str | None
     status: TaskStatus
     priority: int
+    due_at: datetime | None
     created_at: datetime
     updated_at: datetime
