@@ -1,0 +1,81 @@
+name: taskhub
+
+x-app: &app
+  build: .
+  image: taskhub:dev
+  env_file:
+    - path: .env
+      required: false
+  environment:
+    DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://taskhub:taskhub@db:5432/taskhub}
+    TEST_DATABASE_URL: postgresql+psycopg://taskhub:taskhub@db:5432/taskhub_test
+    MIGCHECK_DATABASE_URL: postgresql+psycopg://taskhub:taskhub@db:5432/taskhub_migcheck
+  depends_on:
+    db:
+      condition: service_healthy
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: taskhub
+      POSTGRES_PASSWORD: taskhub
+      POSTGRES_DB: taskhub
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U taskhub -d taskhub"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  migrate:
+    <<: *app
+    command: ["alembic", "upgrade", "head"]
+    restart: "no"
+
+  api:
+    <<: *app
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./:/app
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=2)"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+  tools:
+    <<: *app
+    profiles: ["tools"]
+    volumes:
+      - ./:/app
+    command: ["bash"]
+
+  agent:
+    profiles: ["agent"]
+    build:
+      context: .
+      dockerfile: Dockerfile.agent
+    image: taskhub-agent:dev
+    environment:
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      GOAL_WORKTREE: /work
+    volumes:
+      # Only the loop's worktree is mounted; no docker socket, no home directory.
+      - ${GOAL_WORKTREE:-./.worktrees/goal}:/work
+    working_dir: /work
+    network_mode: bridge
+
+volumes:
+  pgdata:
