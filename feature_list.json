@@ -78,13 +78,20 @@
       "area": "tasks",
       "title": "Task tags",
       "user_visible_behavior": "Tasks can carry tags; tags are created on first use; GET .../tasks?tag=x filters by tag.",
-      "status": "not_started",
+      "status": "passing",
       "verification": [
         "make lab-spec",
         "make verify"
       ],
-      "evidence": [],
-      "notes": "Spec-driven (topic 7): specs/F05-task-tags.md. Needs a new table + migration."
+      "evidence": [
+        "evidence/F05-verify.log",
+        "specs/F05-task-tags.md",
+        "tests/test_tags.py::test_ac1_create_with_tags",
+        "tests/test_tags.py::test_ac8_filter_by_tag",
+        "tests/test_tags.py::test_ac12_deleting_task_removes_links_not_tags",
+        "migrations/versions/0003_add_tags.py"
+      ],
+      "notes": "Spec-driven reference build (topic 7): spec -> plan -> code -> reviewer. make lab-spec: 12/12 ACs have a test_ac<N> test."
     },
     {
       "id": "F06",

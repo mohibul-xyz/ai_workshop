@@ -1,0 +1,79 @@
+verify.sh  2026-10-17T03:05:09+06:00  git=2b2496f+dirty
+
+=== Layer: static ===
+ Container taskhub-db-1 Running 
+ Container taskhub-db-1 Waiting 
+ Container taskhub-db-1 Healthy 
+ Container taskhub-tools-run-f6c3a30d0c5c Creating 
+ Container taskhub-tools-run-f6c3a30d0c5c Created 
+All checks passed!
+58 files already formatted
+ Container taskhub-db-1 Running 
+ Container taskhub-db-1 Waiting 
+ Container taskhub-db-1 Healthy 
+ Container taskhub-tools-run-3ba7c70c3813 Creating 
+ Container taskhub-tools-run-3ba7c70c3813 Created 
+Success: no issues found in 14 source files
+
+=== Layer: behaviour ===
+ Container taskhub-db-1 Running 
+ Container taskhub-db-1 Waiting 
+ Container taskhub-db-1 Healthy 
+ Container taskhub-tools-run-2f2e66ec121d Creating 
+ Container taskhub-tools-run-2f2e66ec121d Created 
+.....................................                                    [100%]
+37 passed in 0.37s
+OK   migrations static check (3 revisions)
+ Container taskhub-db-1 Running 
+ Container taskhub-db-1 Waiting 
+ Container taskhub-db-1 Healthy 
+ Container taskhub-tools-run-e3b37b93866f Creating 
+ Container taskhub-tools-run-e3b37b93866f Created 
+  roundtrip: upgrade head
+  roundtrip: downgrade base
+  roundtrip: upgrade head (again)
+OK   migration round-trip upgrade → downgrade → upgrade
+
+=== Layer: system ===
+ Container taskhub-db-1 Running 
+ Container taskhub-db-1 Waiting 
+ Container taskhub-db-1 Healthy 
+ Container taskhub-db-1 Running 
+ Container taskhub-db-1 Waiting 
+ Container taskhub-db-1 Healthy 
+ Container taskhub-migrate-run-69a3e6afda18 Creating 
+ Container taskhub-migrate-run-69a3e6afda18 Created 
+ Container taskhub-api-1 Running 
+ Container taskhub-db-1 Running 
+ Container taskhub-db-1 Waiting 
+ Container taskhub-db-1 Healthy 
+ Container taskhub-migrate-1 Starting 
+ Container taskhub-migrate-1 Started 
+ Container taskhub-db-1 Waiting 
+ Container taskhub-migrate-1 Waiting 
+ Container taskhub-db-1 Healthy 
+ Container taskhub-migrate-1 Exited 
+ Container taskhub-api-1 Waiting 
+ Container taskhub-db-1 Waiting 
+ Container taskhub-migrate-1 Waiting 
+ Container taskhub-migrate-1 Exited 
+ Container taskhub-api-1 Healthy 
+ Container taskhub-db-1 Healthy 
+  PASS  GET /health → 200 ok                               
+  PASS  F01 create project → 201                           
+  PASS  request id echoed in X-Request-ID                  
+  PASS  F01 duplicate name → 409                           
+  PASS  F01 list projects → 200                            
+  PASS  F02 create task → 201                              
+  PASS  F02 patch task → in_progress                       
+  PASS  F03 filter status=done                             
+  PASS  F03 filter max_priority=1                          
+  PASS  F02 delete task → 204                              
+  PASS  F02 deleted task → 404                             
+  PASS  F04 overdue=true returns only open past-due tasks  
+  PASS  F05 create task with tags                          
+  PASS  F05 filter tag=urgent                              
+smoke_e2e: 14/14 checks passed against http://localhost:8000
+
+VERIFY: static=pass behaviour=pass system=pass
+log: runs/verify-20261017T030509.log
