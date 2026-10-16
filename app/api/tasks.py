@@ -5,7 +5,7 @@ from fastapi import APIRouter, HTTPException, Query, Response, status
 
 from app.api.deps import SessionDep
 from app.models import Task, TaskStatus
-from app.schemas import TaskCreate, TaskRead, TaskUpdate
+from app.schemas import TAG_PATTERN, TaskCreate, TaskRead, TaskUpdate, normalise_tag
 from app.services import projects as project_service
 from app.services import tasks as service
 
@@ -41,10 +41,23 @@ def list_tasks(
     status_: Annotated[TaskStatus | None, Query(alias="status")] = None,
     max_priority: Annotated[int | None, Query(ge=1, le=5)] = None,
     overdue: bool | None = None,
+    tag: str | None = None,
 ) -> Sequence[Task]:
+    if tag is not None:
+        tag = normalise_tag(tag)
+        if not TAG_PATTERN.fullmatch(str(tag)):
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+                detail="tag must be 1-32 chars of a-z, 0-9 or '-'",
+            )
     _require_project(session, project_id)
     return service.list_tasks(
-        session, project_id, status=status_, max_priority=max_priority, overdue=overdue
+        session,
+        project_id,
+        status=status_,
+        max_priority=max_priority,
+        overdue=overdue,
+        tag=tag,
     )
 
 

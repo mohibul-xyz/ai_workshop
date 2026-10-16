@@ -1,7 +1,19 @@
 import enum
 from datetime import datetime
 
-from sqlalchemy import CheckConstraint, DateTime, Enum, ForeignKey, Integer, String, Text, func
+from sqlalchemy import (
+    CheckConstraint,
+    Column,
+    DateTime,
+    Enum,
+    ForeignKey,
+    Integer,
+    String,
+    Table,
+    Text,
+    UniqueConstraint,
+    func,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base
@@ -11,6 +23,22 @@ class TaskStatus(enum.StrEnum):
     todo = "todo"
     in_progress = "in_progress"
     done = "done"
+
+
+task_tags = Table(
+    "task_tags",
+    Base.metadata,
+    Column("task_id", ForeignKey("tasks.id", ondelete="CASCADE"), primary_key=True),
+    Column("tag_id", ForeignKey("tags.id", ondelete="CASCADE"), primary_key=True, index=True),
+)
+
+
+class Tag(Base):
+    __tablename__ = "tags"
+    __table_args__ = (UniqueConstraint("name", name="uq_tags_name"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String(32), nullable=False)
 
 
 class Project(Base):
@@ -51,3 +79,4 @@ class Task(Base):
     )
 
     project: Mapped[Project] = relationship(back_populates="tasks")
+    tags: Mapped[list[Tag]] = relationship(secondary=task_tags, lazy="selectin", order_by=Tag.name)

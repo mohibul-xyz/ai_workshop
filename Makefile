@@ -79,3 +79,6 @@ lab-permissions: ## Topic 5: permission simulator must score 25/25
 
 verify: ## Topic 7/9 gate — 3-layer definition of done; EVIDENCE=F04 copies log to evidence/
 	@bash scripts/verify.sh
+
+lab-spec: ## Topic 7: every spec acceptance criterion has a test_ac<N>_<slug>
+	@$(PY) scripts/check_spec_coverage.py
