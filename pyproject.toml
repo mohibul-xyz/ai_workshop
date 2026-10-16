@@ -45,6 +45,10 @@ ignore = ["S101"]
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["S"]
 "migrations/**" = ["E501"]
+# Harness tooling runs fixed-argv subprocesses and local HTTP by design.
+".claude/hooks/**" = ["S603", "S607", "S602", "E402"]
+"scripts/**" = ["S603", "S607", "S310", "S602"]
+"stages/**" = ["S603", "S607", "S310"]
 
 [tool.mypy]
 strict = true

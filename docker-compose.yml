@@ -10,6 +10,9 @@ x-app: &app
     DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://taskhub:taskhub@db:5432/taskhub}
     TEST_DATABASE_URL: postgresql+psycopg://taskhub:taskhub@db:5432/taskhub_test
     MIGCHECK_DATABASE_URL: postgresql+psycopg://taskhub:taskhub@db:5432/taskhub_migcheck
+    HOME: /tmp
+  # Run as the host user so files written into the bind mount (caches, logs) stay editable.
+  user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
   depends_on:
     db:
       condition: service_healthy

@@ -27,23 +27,36 @@ def is_committed(rel: str) -> bool:
 def check(rel: str) -> tuple[str, str, str] | None:
     name = rel.rsplit("/", 1)[-1]
     if (name == ".env" or name.startswith(".env.")) and name != ".env.example":
-        return ("editing a .env file", "it holds secrets and per-machine config",
-                "document new variables in `.env.example` and tell the human to set them")
+        return (
+            "editing a .env file",
+            "it holds secrets and per-machine config",
+            "document new variables in `.env.example` and tell the human to set them",
+        )
     if rel.startswith("secrets/"):
         return ("editing secrets/", "secrets are managed by humans", "ask a human")
-    if rel == ".claude/settings.json" or fnmatch.fnmatch(rel, ".claude/hooks/*") \
-            or rel.startswith(".claude/hooks/"):
-        return ("editing harness guardrails", "the agent must not loosen its own guardrails",
-                "describe the change you want and ask a human to make it")
+    if (
+        rel == ".claude/settings.json"
+        or fnmatch.fnmatch(rel, ".claude/hooks/*")
+        or rel.startswith(".claude/hooks/")
+    ):
+        return (
+            "editing harness guardrails",
+            "the agent must not loosen its own guardrails",
+            "describe the change you want and ask a human to make it",
+        )
     if "/hidden/" in f"/{rel}" and rel.startswith("benchmarks/"):
-        return ("touching hidden benchmark tests", "they score your work",
-                "work from benchmarks/*/task.md")
+        return (
+            "touching hidden benchmark tests",
+            "they score your work",
+            "work from benchmarks/*/task.md",
+        )
     if fnmatch.fnmatch(rel, "migrations/versions/*.py") and is_committed(rel):
-        return (f"editing committed migration {rel}",
-                "applied migrations are history; editing them desynchronises every database "
-                "that already ran them",
-                "create a new revision: use the `write-migration` skill "
-                "(`make migration name=<slug>`)")
+        return (
+            f"editing committed migration {rel}",
+            "applied migrations are history; editing them desynchronises every database "
+            "that already ran them",
+            "create a new revision: use the `write-migration` skill (`make migration name=<slug>`)",
+        )
     return None
 
 

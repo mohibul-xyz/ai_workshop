@@ -23,11 +23,29 @@ from pathlib import Path
 
 REQUIRED = ["overview", "hard constraints", "commands", "definition of done", "docs"]
 PATH_RE = re.compile(r"`([A-Za-z0-9_.\-/*]+)`")
-PATH_PREFIXES = ("docs/", "scripts/", "specs/", "goals/", "app/", "tests/", "migrations/",
-                 "stages/", "benchmarks/", ".claude/")
-PATH_FILES = {"feature_list.json", "claude-progress.md", "session-handoff.md", "init.sh",
-              "Makefile", "AGENTS.md", "evaluator-rubric.md", "quality-document.md",
-              "clean-state-checklist.md"}
+PATH_PREFIXES = (
+    "docs/",
+    "scripts/",
+    "specs/",
+    "goals/",
+    "app/",
+    "tests/",
+    "migrations/",
+    "stages/",
+    "benchmarks/",
+    ".claude/",
+)
+PATH_FILES = {
+    "feature_list.json",
+    "claude-progress.md",
+    "session-handoff.md",
+    "init.sh",
+    "Makefile",
+    "AGENTS.md",
+    "evaluator-rubric.md",
+    "quality-document.md",
+    "clean-state-checklist.md",
+}
 
 
 def lint(path: Path, root: Path, max_lines: int) -> list[str]:
@@ -40,8 +58,9 @@ def lint(path: Path, root: Path, max_lines: int) -> list[str]:
     if len(lines) < 20:
         problems.append(f"only {len(lines)} lines: the router is missing content")
 
-    headings = [(i, line[3:].strip().lower()) for i, line in enumerate(lines)
-                if line.startswith("## ")]
+    headings = [
+        (i, line[3:].strip().lower()) for i, line in enumerate(lines) if line.startswith("## ")
+    ]
     positions: list[int] = []
     for req in REQUIRED:
         hit = next((i for i, h in headings if h.startswith(req)), None)
@@ -56,10 +75,12 @@ def lint(path: Path, root: Path, max_lines: int) -> list[str]:
     hc = next((i for i, h in headings if h.startswith("hard constraints")), None)
     if hc is not None:
         if hc > 15:
-            problems.append(f"'Hard constraints' starts at line {hc + 1}; put it near the top "
-                            "(lost-in-the-middle)")
+            problems.append(
+                f"'Hard constraints' starts at line {hc + 1}; put it near the top "
+                "(lost-in-the-middle)"
+            )
         nxt = next((i for i, _ in headings if i > hc), len(lines))
-        items = [ln for ln in lines[hc + 1:nxt] if re.match(r"^\s*(\d+\.|[-*])\s+", ln)]
+        items = [ln for ln in lines[hc + 1 : nxt] if re.match(r"^\s*(\d+\.|[-*])\s+", ln)]
         if not items:
             problems.append("'Hard constraints' has no list items")
         elif len(items) > 10:
@@ -69,9 +90,13 @@ def lint(path: Path, root: Path, max_lines: int) -> list[str]:
     docs = next((i for i, h in headings if h.startswith("docs")), None)
     if docs is not None:
         nxt = next((i for i, _ in headings if i > docs), len(lines))
-        for ln in lines[docs + 1:nxt]:
-            if ln.lstrip().startswith(("-", "*")) and "read when" not in ln.lower() \
-                    and "read the" not in ln.lower() and "goal files" not in ln.lower():
+        for ln in lines[docs + 1 : nxt]:
+            if (
+                ln.lstrip().startswith(("-", "*"))
+                and "read when" not in ln.lower()
+                and "read the" not in ln.lower()
+                and "goal files" not in ln.lower()
+            ):
                 problems.append(f"doc entry without a 'read when' hint: {ln.strip()[:70]}")
 
     # Linked paths must exist.
@@ -111,8 +136,10 @@ def main() -> int:
         for p in problems:
             print(f"  - {p}")
         return 1
-    print(f"OK   {path} ({n} lines, all sections present, links resolve"
-          + (", mirror in sync)" if args.mirror else ")"))
+    print(
+        f"OK   {path} ({n} lines, all sections present, links resolve"
+        + (", mirror in sync)" if args.mirror else ")")
+    )
     return 0
 
 

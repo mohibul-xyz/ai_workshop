@@ -40,7 +40,12 @@ def main() -> None:
     if not changed:
         sys.exit(0)
     res = subprocess.run(  # noqa: S602 - command is configured by the harness, not the agent
-        CHECK_CMD, shell=True, cwd=PROJECT_DIR, capture_output=True, text=True, check=False,
+        CHECK_CMD,
+        shell=True,
+        cwd=PROJECT_DIR,
+        capture_output=True,
+        text=True,
+        check=False,
     )
     if res.returncode == 0:
         sys.exit(0)

@@ -19,11 +19,14 @@ HOOK = "guard_bash"
 # (regex, what, why, instead)
 RULES: list[tuple[re.Pattern[str], str, str, str]] = [
     (
-        re.compile(r"\brm\s+(-[a-zA-Z]*r[a-zA-Z]*f|-[a-zA-Z]*f[a-zA-Z]*r|(-\S+\s+)*-r\b.*\s-f\b|"
-                   r"(-\S+\s+)*-f\b.*\s-r\b|--recursive\b.*--force|--force\b.*--recursive)"),
+        re.compile(
+            r"\brm\s+(-[a-zA-Z]*r[a-zA-Z]*f|-[a-zA-Z]*f[a-zA-Z]*r|(-\S+\s+)*-r\b.*\s-f\b|"
+            r"(-\S+\s+)*-f\b.*\s-r\b|--recursive\b.*--force|--force\b.*--recursive)"
+        ),
         "recursive force delete (rm -rf)",
         "it deletes files irreversibly, outside git's safety net",
-        "delete specific files with `git rm <file>` or plain `rm <file>`; ask a human for bulk deletes",
+        "delete specific files with `git rm <file>` or plain `rm <file>`; "
+        "ask a human for bulk deletes",
     ),
     (
         re.compile(r"\bgit\s+reset\s+.*--hard\b|\bgit\s+reset\s+--hard\b"),
@@ -75,8 +78,10 @@ RULES: list[tuple[re.Pattern[str], str, str, str]] = [
         "add dependencies to pyproject.toml and ask a human to rebuild the image",
     ),
     (
-        re.compile(r"(^|[\s;&|(])(cat|less|more|head|tail|bat|nl|strings|xxd|od|grep|rg|sed|awk|"
-                   r"source|\.)\s+([^|;&]*[\s/'\"])?\.env(?!\.example\b)(\.[\w.-]+)?\b"),
+        re.compile(
+            r"(^|[\s;&|(])(cat|less|more|head|tail|bat|nl|strings|xxd|od|grep|rg|sed|awk|"
+            r"source|\.)\s+([^|;&]*[\s/'\"])?\.env(?!\.example\b)(\.[\w.-]+)?\b"
+        ),
         "reading a .env file",
         "it contains secrets the agent must never see",
         "read `.env.example` for variable names; ask a human for values",

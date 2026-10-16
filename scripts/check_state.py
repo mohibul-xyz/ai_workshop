@@ -22,8 +22,15 @@ import sys
 from pathlib import Path
 
 REQUIRED = {
-    "id": str, "priority": int, "area": str, "title": str, "user_visible_behavior": str,
-    "status": str, "verification": list, "evidence": list, "notes": str,
+    "id": str,
+    "priority": int,
+    "area": str,
+    "title": str,
+    "user_visible_behavior": str,
+    "status": str,
+    "verification": list,
+    "evidence": list,
+    "notes": str,
 }
 STATUSES = {"not_started", "in_progress", "passing", "failing", "blocked"}
 PATH_RE = re.compile(r"^((?:app|tests|evidence|runs|specs|migrations|scripts|docs)/[\w./-]+)")
@@ -57,8 +64,10 @@ def validate(data: object, root: Path) -> list[str]:
             if not f.get("verification"):
                 errors.append(f"{fid}: passing without a verification command")
             if not f.get("evidence"):
-                errors.append(f"{fid}: passing without evidence — run the verification and "
-                              "record the log/test names")
+                errors.append(
+                    f"{fid}: passing without evidence — run the verification and "
+                    "record the log/test names"
+                )
         for ev in f.get("evidence") or []:
             m = PATH_RE.match(str(ev))
             if m:
@@ -66,10 +75,14 @@ def validate(data: object, root: Path) -> list[str]:
                 if not (root / rel).exists():
                     errors.append(f"{fid}: evidence path does not exist: {rel}")
 
-    active = [f.get("id") for f in feats if isinstance(f, dict) and f.get("status") == "in_progress"]
+    active = [
+        f.get("id") for f in feats if isinstance(f, dict) and f.get("status") == "in_progress"
+    ]
     if len(active) > 1:
-        errors.append(f"WIP=1 violated: {len(active)} features in_progress ({', '.join(map(str, active))})"
-                      " — finish or hand off one before starting another")
+        errors.append(
+            f"WIP=1 violated: {len(active)} features in_progress ({', '.join(map(str, active))})"
+            " — finish or hand off one before starting another"
+        )
     return errors
 
 
@@ -93,8 +106,11 @@ def main() -> int:
     counts: dict[str, int] = {}
     for f in feats:
         counts[f["status"]] = counts.get(f["status"], 0) + 1
-    print(f"OK   {path}: {len(feats)} features ("
-          + ", ".join(f"{k}={v}" for k, v in sorted(counts.items())) + ")")
+    print(
+        f"OK   {path}: {len(feats)} features ("
+        + ", ".join(f"{k}={v}" for k, v in sorted(counts.items()))
+        + ")"
+    )
     return 0
 
 

@@ -23,14 +23,16 @@ def main() -> None:
             ok = bool(response["success"])
         elif "interrupted" in response:
             ok = not response["interrupted"]
-    audit({
-        "event": event.get("hook_event_name", "PostToolUse"),
-        "session": str(event.get("session_id", ""))[:8],
-        "tool": event.get("tool_name"),
-        "decision": "ran",
-        "ok": ok,
-        "input": _summarise(tool_input(event)),
-    })
+    audit(
+        {
+            "event": event.get("hook_event_name", "PostToolUse"),
+            "session": str(event.get("session_id", ""))[:8],
+            "tool": event.get("tool_name"),
+            "decision": "ran",
+            "ok": ok,
+            "input": _summarise(tool_input(event)),
+        }
+    )
     sys.exit(0)
 
 

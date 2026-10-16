@@ -1,0 +1,13 @@
+{
+  "_comment": "Exercise starting point. Copy the permissions block into .claude/settings.json and extend it until `make lab-permissions SETTINGS=stages/02-permissions-hooks-skills/starter-settings.json` scores 25/25. Order of evaluation: deny -> ask -> allow -> default.",
+  "permissions": {
+    "allow": [
+      "Bash(make test)",
+      "Edit(./app/**)"
+    ],
+    "ask": [],
+    "deny": [
+      "Read(./.env)"
+    ]
+  }
+}

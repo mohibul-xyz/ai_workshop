@@ -39,8 +39,9 @@ def feature_summary() -> list[str]:
     for f in feats:
         counts[f.get("status", "?")] = counts.get(f.get("status", "?"), 0) + 1
     active = [f for f in feats if f.get("status") == "in_progress"]
-    todo = sorted((f for f in feats if f.get("status") == "not_started"),
-                  key=lambda f: f.get("priority", 99))
+    todo = sorted(
+        (f for f in feats if f.get("status") == "not_started"), key=lambda f: f.get("priority", 99)
+    )
     out = ["Features: " + ", ".join(f"{k}={v}" for k, v in sorted(counts.items()))]
     if active:
         f = active[0]
@@ -73,9 +74,14 @@ def main() -> None:
 
     status = git("status", "--short").stdout.strip()
     branch = git("rev-parse", "--abbrev-ref", "HEAD").stdout.strip()
-    parts += ["", f"git branch: {branch or '?'}",
-              "git status --short:", status or "(clean)",
-              "", "Next: run ./init.sh (or make check) to confirm the baseline before editing."]
+    parts += [
+        "",
+        f"git branch: {branch or '?'}",
+        "git status --short:",
+        status or "(clean)",
+        "",
+        "Next: run ./init.sh (or make check) to confirm the baseline before editing.",
+    ]
     print("\n".join(parts))
 
 

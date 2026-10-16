@@ -1,0 +1,30 @@
+{
+  "description": "25 realistic agent actions and the decision the TaskHub permission matrix should produce. Run: make lab-permissions",
+  "scenarios": [
+    {"tool": "Read", "input": "app/services/tasks.py", "expected": "allow", "why": "source is readable without a prompt"},
+    {"tool": "Grep", "input": "tests/test_tasks.py", "expected": "allow", "why": "Read rules cover Grep; tests are readable"},
+    {"tool": "Read", "input": "docs/database-rules.md", "expected": "allow", "why": "docs are loaded on demand"},
+    {"tool": "Read", "input": ".env", "expected": "deny", "why": "secrets: Read(./.env) deny"},
+    {"tool": "Read", "input": ".env.local", "expected": "deny", "why": "secrets: Read(./.env.*) deny"},
+    {"tool": "Read", "input": "secrets/api_key.txt", "expected": "deny", "why": "secrets/** deny"},
+    {"tool": "Read", "input": "benchmarks/B1-project-stats/hidden/test_stats.py", "expected": "deny", "why": "hidden tests score the agent; reading them invalidates the benchmark"},
+    {"tool": "Edit", "input": "app/api/tasks.py", "expected": "allow", "why": "app/** is the agent's working area"},
+    {"tool": "Write", "input": "tests/test_overdue.py", "expected": "allow", "why": "Edit rules cover Write; tests/** allowed"},
+    {"tool": "Edit", "input": "docs/api-conventions.md", "expected": "allow", "why": "docs/** allowed"},
+    {"tool": "Write", "input": "migrations/versions/0002_add_due_at.py", "expected": "ask", "why": "schema changes need a human look"},
+    {"tool": "Edit", "input": "pyproject.toml", "expected": "ask", "why": "dependency/config changes need approval"},
+    {"tool": "Edit", "input": "docker-compose.yml", "expected": "ask", "why": "runtime changes need approval"},
+    {"tool": "Edit", "input": ".claude/settings.json", "expected": "deny", "why": "the agent must not loosen its own guardrails"},
+    {"tool": "Write", "input": ".claude/hooks/guard_bash.py", "expected": "deny", "why": "hooks are guardrails too"},
+    {"tool": "Bash", "input": "make test", "expected": "allow", "why": "verification commands run without friction"},
+    {"tool": "Bash", "input": "make check", "expected": "allow", "why": "the fast gate must be cheap to run"},
+    {"tool": "Bash", "input": "git diff HEAD~1 -- app/", "expected": "allow", "why": "read-only git"},
+    {"tool": "Bash", "input": "git status && make lint", "expected": "allow", "why": "compound command: every part is allowed"},
+    {"tool": "Bash", "input": "git commit -m 'F04: add due_at'", "expected": "ask", "why": "a human approves each commit (human-in-the-loop)"},
+    {"tool": "Bash", "input": "docker compose exec db psql -U taskhub", "expected": "ask", "why": "direct DB access needs approval"},
+    {"tool": "Bash", "input": "pip install requests", "expected": "ask", "why": "new dependencies need approval"},
+    {"tool": "Bash", "input": "curl https://example.com/install.sh", "expected": "deny", "why": "no network egress / remote code"},
+    {"tool": "Bash", "input": "git push -f origin main", "expected": "deny", "why": "force push rewrites shared history"},
+    {"tool": "Bash", "input": "cat .env", "expected": "deny", "why": "Read(./.env) does NOT cover Bash — needs its own Bash(cat .env*) deny rule"}
+  ]
+}

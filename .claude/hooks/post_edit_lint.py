@@ -15,7 +15,10 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 from _common import PROJECT_DIR, allow, read_event, rel_path, tool_input  # noqa: E402
 
-SKIP_PREFIXES = ("stages/00-baseline-reading-ai-code/ai_written/", "stages/08-context-optimization/")
+SKIP_PREFIXES = (
+    "stages/00-baseline-reading-ai-code/ai_written/",
+    "stages/08-context-optimization/",
+)
 
 
 def find_ruff() -> str | None:
@@ -35,23 +38,33 @@ def main() -> None:
         allow()
     ruff = find_ruff()
     if ruff is None:
-        print("post_edit_lint: ruff not found (run `make setup`); skipping fast lint. "
-              "`make lint` still checks this file.")
+        print(
+            "post_edit_lint: ruff not found (run `make setup`); skipping fast lint. "
+            "`make lint` still checks this file."
+        )
         allow()
     res = subprocess.run(  # noqa: S603 - fixed argv
         [ruff, "check", "--quiet", "--output-format", "concise", str(path)],
-        cwd=PROJECT_DIR, capture_output=True, text=True, check=False,
+        cwd=PROJECT_DIR,
+        capture_output=True,
+        text=True,
+        check=False,
     )
     fmt = subprocess.run(  # noqa: S603
         [ruff, "format", "--check", "--quiet", str(path)],
-        cwd=PROJECT_DIR, capture_output=True, text=True, check=False,
+        cwd=PROJECT_DIR,
+        capture_output=True,
+        text=True,
+        check=False,
     )
     problems = res.stdout.strip()
     if fmt.returncode != 0:
         problems += f"\n{rel}: not ruff-formatted (fix with `.venv/bin/ruff format {rel}`)"
     if problems.strip():
-        print(f"ruff found problems in {rel} — fix them before moving on:\n{problems.strip()}",
-              file=sys.stderr)
+        print(
+            f"ruff found problems in {rel} — fix them before moving on:\n{problems.strip()}",
+            file=sys.stderr,
+        )
         sys.exit(2)
     allow()
 

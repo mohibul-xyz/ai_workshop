@@ -22,13 +22,19 @@ def main() -> None:
         allow()
     res = subprocess.run(  # noqa: S603 - fixed argv
         [sys.executable, str(PROJECT_DIR / "scripts" / "check_state.py")],
-        cwd=PROJECT_DIR, capture_output=True, text=True, check=False,
+        cwd=PROJECT_DIR,
+        capture_output=True,
+        text=True,
+        check=False,
     )
     if res.returncode != 0:
-        print("feature_list.json is now invalid — fix it before continuing:\n"
-              + (res.stdout + res.stderr).strip()
-              + "\nRules: at most one feature in_progress (WIP=1); 'passing' needs evidence "
-                "that exists (e.g. runs/verify-*.log).", file=sys.stderr)
+        print(
+            "feature_list.json is now invalid — fix it before continuing:\n"
+            + (res.stdout + res.stderr).strip()
+            + "\nRules: at most one feature in_progress (WIP=1); 'passing' needs evidence "
+            "that exists (e.g. runs/verify-*.log).",
+            file=sys.stderr,
+        )
         sys.exit(2)
     allow()
 

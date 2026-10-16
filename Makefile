@@ -2,6 +2,8 @@
 SHELL := /bin/bash
 .DEFAULT_GOAL := help
 
+export HOST_UID := $(shell id -u)
+export HOST_GID := $(shell id -g)
 COMPOSE ?= docker compose
 TOOLS   := $(COMPOSE) --profile tools run --rm -T tools
 PY      ?= python3
@@ -52,3 +54,26 @@ migration: ## Create the next sequential migration: make migration name=add_due_
 	@test -n "$(name)" || (echo "usage: make migration name=<snake_slug>" && exit 1)
 	$(TOOLS) sh -c 'n=$$(ls migrations/versions | grep -cE "^[0-9]{4}_"); \
 	  rev=$$(printf "%04d" $$((n+1))); alembic revision --autogenerate --rev-id $$rev -m "$(name)"'
+
+migrate-check: ## Static migration rules + upgrade→downgrade→upgrade round-trip (throwaway DB)
+	$(PY) scripts/check_migrations.py --static
+	$(TOOLS) python scripts/check_migrations.py --roundtrip
+
+# ---------------------------------------------------------------- harness / state
+.PHONY: check-state hooks-test lab-claude-md lab-permissions
+check-state: ## Validate feature_list.json (schema, WIP=1, evidence)
+	@$(PY) scripts/check_state.py
+
+hooks-test: ## Unit-test every hook with fake tool calls
+	@set -o pipefail; $(PY) -m unittest discover -s .claude/hooks/tests_hooks 2>&1 | tail -n 3
+
+FILE ?= CLAUDE.md
+lab-claude-md: ## Topic 2: lint CLAUDE.md as a router (+ AGENTS.md mirror)
+	$(PY) scripts/lint_claude_md.py $(FILE) $(if $(filter CLAUDE.md,$(FILE)),--mirror AGENTS.md)
+
+SETTINGS ?= .claude/settings.json
+lab-permissions: ## Topic 5: permission simulator must score 25/25
+	$(PY) stages/02-permissions-hooks-skills/permission_sim.py --settings $(SETTINGS)
+
+verify: ## Topic 7/9 gate — 3-layer definition of done; EVIDENCE=F04 copies log to evidence/
+	@bash scripts/verify.sh

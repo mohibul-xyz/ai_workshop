@@ -18,13 +18,21 @@ HOOKS = Path(__file__).resolve().parents[1]
 REPO = HOOKS.parents[1]
 
 
-def run_hook(name: str, event: dict[str, object], project: Path | None = None,
-             env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
+def run_hook(
+    name: str,
+    event: dict[str, object],
+    project: Path | None = None,
+    env: dict[str, str] | None = None,
+) -> subprocess.CompletedProcess[str]:
     full_env = {**os.environ, "HARNESS_AUDIT": "0", "CLAUDE_PROJECT_DIR": str(project or REPO)}
     full_env.update(env or {})
     return subprocess.run(  # noqa: S603
-        [sys.executable, str(HOOKS / name)], input=json.dumps(event),
-        capture_output=True, text=True, env=full_env, check=False,
+        [sys.executable, str(HOOKS / name)],
+        input=json.dumps(event),
+        capture_output=True,
+        text=True,
+        env=full_env,
+        check=False,
     )
 
 
@@ -47,7 +55,8 @@ def make_repo(files: dict[str, str], commit: bool = True) -> Path:
         subprocess.run(["git", "add", "-A"], cwd=root, check=True)  # noqa: S607
         subprocess.run(  # noqa: S607
             ["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-qm", "init"],
-            cwd=root, check=True,
+            cwd=root,
+            check=True,
         )
     return root
 
@@ -118,15 +127,21 @@ class GuardBashTest(unittest.TestCase):
         self.assertEqual(run_hook("guard_bash.py", edit("app/main.py")).returncode, 0)
 
     def test_empty_stdin_allows(self) -> None:
-        res = subprocess.run([sys.executable, str(HOOKS / "guard_bash.py")], input="",  # noqa: S603
-                             capture_output=True, text=True, check=False)
+        res = subprocess.run(
+            [sys.executable, str(HOOKS / "guard_bash.py")],
+            input="",  # noqa: S603
+            capture_output=True,
+            text=True,
+            check=False,
+        )
         self.assertEqual(res.returncode, 0)
 
 
 class GuardFilesTest(unittest.TestCase):
     def setUp(self) -> None:
-        self.repo = make_repo({"migrations/versions/0001_initial.py": "x = 1\n",
-                               "app/main.py": "x = 1\n"})
+        self.repo = make_repo(
+            {"migrations/versions/0001_initial.py": "x = 1\n", "app/main.py": "x = 1\n"}
+        )
 
     def check(self, rel: str, tool: str = "Edit") -> int:
         return run_hook("guard_files.py", edit(str(self.repo / rel), tool), self.repo).returncode
@@ -164,8 +179,11 @@ class GuardFilesTest(unittest.TestCase):
 
 class PostEditLintTest(unittest.TestCase):
     def test_non_python_ignored(self) -> None:
-        ev = {"hook_event_name": "PostToolUse", "tool_name": "Edit",
-              "tool_input": {"file_path": str(REPO / "README.md")}}
+        ev = {
+            "hook_event_name": "PostToolUse",
+            "tool_name": "Edit",
+            "tool_input": {"file_path": str(REPO / "README.md")},
+        }
         self.assertEqual(run_hook("post_edit_lint.py", ev).returncode, 0)
 
     def test_reports_ruff_errors(self) -> None:
@@ -175,8 +193,11 @@ class PostEditLintTest(unittest.TestCase):
         repo = make_repo({"bad.py": "import os\n"}, commit=False)
         (repo / ".venv" / "bin").mkdir(parents=True)
         (repo / ".venv" / "bin" / "ruff").symlink_to(ruff)
-        ev = {"hook_event_name": "PostToolUse", "tool_name": "Write",
-              "tool_input": {"file_path": str(repo / "bad.py")}}
+        ev = {
+            "hook_event_name": "PostToolUse",
+            "tool_name": "Write",
+            "tool_input": {"file_path": str(repo / "bad.py")},
+        }
         res = run_hook("post_edit_lint.py", ev, repo)
         self.assertEqual(res.returncode, 2)
         self.assertIn("F401", res.stderr)
@@ -184,20 +205,38 @@ class PostEditLintTest(unittest.TestCase):
 
 class StateCheckHookTest(unittest.TestCase):
     def test_only_runs_for_feature_list(self) -> None:
-        ev = {"hook_event_name": "PostToolUse", "tool_name": "Edit",
-              "tool_input": {"file_path": "app/main.py"}}
+        ev = {
+            "hook_event_name": "PostToolUse",
+            "tool_name": "Edit",
+            "tool_input": {"file_path": "app/main.py"},
+        }
         self.assertEqual(run_hook("post_state_check.py", ev).returncode, 0)
 
     def test_blocks_two_in_progress(self) -> None:
-        feats = [{"id": f"F0{i}", "priority": i, "area": "api", "title": "t",
-                  "user_visible_behavior": "b", "status": "in_progress",
-                  "verification": ["make test"], "evidence": [], "notes": ""} for i in (1, 2)]
+        feats = [
+            {
+                "id": f"F0{i}",
+                "priority": i,
+                "area": "api",
+                "title": "t",
+                "user_visible_behavior": "b",
+                "status": "in_progress",
+                "verification": ["make test"],
+                "evidence": [],
+                "notes": "",
+            }
+            for i in (1, 2)
+        ]
         repo = make_repo({"feature_list.json": json.dumps({"features": feats})}, commit=False)
         (repo / "scripts").mkdir()
         (repo / "scripts" / "check_state.py").write_text(
-            (REPO / "scripts" / "check_state.py").read_text())
-        ev = {"hook_event_name": "PostToolUse", "tool_name": "Edit",
-              "tool_input": {"file_path": str(repo / "feature_list.json")}}
+            (REPO / "scripts" / "check_state.py").read_text()
+        )
+        ev = {
+            "hook_event_name": "PostToolUse",
+            "tool_name": "Edit",
+            "tool_input": {"file_path": str(repo / "feature_list.json")},
+        }
         res = run_hook("post_state_check.py", ev, repo)
         self.assertEqual(res.returncode, 2)
         self.assertIn("WIP", res.stderr)
@@ -236,15 +275,25 @@ class StopGateTest(unittest.TestCase):
 
 class SessionStartTest(unittest.TestCase):
     def test_reports_active_feature_and_git_status(self) -> None:
-        feats = [{"id": "F04", "priority": 1, "title": "Due dates", "status": "in_progress",
-                  "notes": "migration done, filter next"}]
-        repo = make_repo({
-            "feature_list.json": json.dumps({"features": feats}),
-            "claude-progress.md": "# P\n\n## Current verified state\n- make check green\n",
-        })
+        feats = [
+            {
+                "id": "F04",
+                "priority": 1,
+                "title": "Due dates",
+                "status": "in_progress",
+                "notes": "migration done, filter next",
+            }
+        ]
+        repo = make_repo(
+            {
+                "feature_list.json": json.dumps({"features": feats}),
+                "claude-progress.md": "# P\n\n## Current verified state\n- make check green\n",
+            }
+        )
         (repo / "scratch.py").write_text("")
-        res = run_hook("session_start.py", {"hook_event_name": "SessionStart", "source": "startup"},
-                       repo)
+        res = run_hook(
+            "session_start.py", {"hook_event_name": "SessionStart", "source": "startup"}, repo
+        )
         self.assertEqual(res.returncode, 0)
         self.assertIn("ACTIVE feature: F04", res.stdout)
         self.assertIn("migration done", res.stdout)
@@ -259,8 +308,13 @@ class SessionStartTest(unittest.TestCase):
 class AuditLogTest(unittest.TestCase):
     def test_appends_jsonl(self) -> None:
         repo = make_repo({"x": ""})
-        ev = {"hook_event_name": "PostToolUse", "tool_name": "Bash", "session_id": "abcdef123",
-              "tool_input": {"command": "make test"}, "tool_response": {"success": True}}
+        ev = {
+            "hook_event_name": "PostToolUse",
+            "tool_name": "Bash",
+            "session_id": "abcdef123",
+            "tool_input": {"command": "make test"},
+            "tool_response": {"success": True},
+        }
         res = run_hook("audit_log.py", ev, repo, {"HARNESS_AUDIT": "1"})
         self.assertEqual(res.returncode, 0)
         rec = json.loads((repo / ".claude" / "audit.log").read_text().splitlines()[-1])

@@ -71,14 +71,16 @@ def audit(record: dict[str, Any]) -> None:
 def block(hook: str, event: dict[str, Any], what: str, why: str, instead: str) -> NoReturn:
     """Block the tool call (exit 2) with an actionable message for the agent."""
     msg = f"BLOCKED by {hook}: {what}\nWhy: {why}\nDo instead: {instead}"
-    audit({
-        "event": event.get("hook_event_name", "PreToolUse"),
-        "tool": event.get("tool_name"),
-        "decision": "block",
-        "hook": hook,
-        "reason": what,
-        "input": _summarise(tool_input(event)),
-    })
+    audit(
+        {
+            "event": event.get("hook_event_name", "PreToolUse"),
+            "tool": event.get("tool_name"),
+            "decision": "block",
+            "hook": hook,
+            "reason": what,
+            "input": _summarise(tool_input(event)),
+        }
+    )
     print(msg, file=sys.stderr)
     sys.exit(2)
 
