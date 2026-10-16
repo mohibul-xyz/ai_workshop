@@ -7,7 +7,9 @@
       "title": "Projects: create / list, unique name",
       "user_visible_behavior": "POST /api/v1/projects creates a project (201); a duplicate name returns 409; GET /api/v1/projects lists projects by id.",
       "status": "passing",
-      "verification": ["make test"],
+      "verification": [
+        "make test"
+      ],
       "evidence": [
         "tests/test_projects.py::test_create_project_returns_201_and_body",
         "tests/test_projects.py::test_duplicate_project_name_returns_409",
@@ -22,7 +24,9 @@
       "title": "Task CRUD",
       "user_visible_behavior": "Tasks can be created under a project, read, patched and deleted; priority must be 1-5.",
       "status": "passing",
-      "verification": ["make test"],
+      "verification": [
+        "make test"
+      ],
       "evidence": [
         "tests/test_tasks.py::test_create_task_defaults",
         "tests/test_tasks.py::test_get_update_delete_task",
@@ -37,7 +41,9 @@
       "title": "Filter tasks by status and max priority",
       "user_visible_behavior": "GET /api/v1/projects/{id}/tasks?status=todo&max_priority=2 returns matching tasks; filters combine with AND; max_priority is inclusive.",
       "status": "passing",
-      "verification": ["make test"],
+      "verification": [
+        "make test"
+      ],
       "evidence": [
         "tests/test_tasks.py::test_filter_by_status",
         "tests/test_tasks.py::test_filter_by_max_priority_is_inclusive",
@@ -51,10 +57,20 @@
       "area": "tasks",
       "title": "Due dates + ?overdue=true filter",
       "user_visible_behavior": "Tasks have an optional timezone-aware due_at; GET .../tasks?overdue=true returns tasks whose due_at is in the past and that are not done.",
-      "status": "not_started",
-      "verification": ["make migrate-check", "make verify"],
-      "evidence": [],
-      "notes": "Needs migration 0002 (write-migration skill). Built human-in-the-loop (topic 6): see stages/04-scope-human-in-the-loop/approval-checklist.md."
+      "status": "passing",
+      "verification": [
+        "make migrate-check",
+        "make verify"
+      ],
+      "evidence": [
+        "evidence/F04-verify.log",
+        "tests/test_due_dates.py::test_overdue_true_returns_open_past_due_tasks",
+        "tests/test_due_dates.py::test_overdue_excludes_done_tasks",
+        "tests/test_due_dates.py::test_overdue_boundary_due_exactly_now_is_not_overdue",
+        "tests/test_due_dates.py::test_naive_due_at_rejected",
+        "migrations/versions/0002_add_task_due_at.py"
+      ],
+      "notes": "Reference build, six approved steps (topic 6). 6 tests failed before the filter commit, all pass after. Overdue = due_at < now (strict) and status != done."
     },
     {
       "id": "F05",
@@ -63,7 +79,10 @@
       "title": "Task tags",
       "user_visible_behavior": "Tasks can carry tags; tags are created on first use; GET .../tasks?tag=x filters by tag.",
       "status": "not_started",
-      "verification": ["make lab-spec", "make verify"],
+      "verification": [
+        "make lab-spec",
+        "make verify"
+      ],
       "evidence": [],
       "notes": "Spec-driven (topic 7): specs/F05-task-tags.md. Needs a new table + migration."
     },
@@ -74,7 +93,9 @@
       "title": "Pagination on list endpoints",
       "user_visible_behavior": "List endpoints accept limit/offset and return {items,total,limit,offset} as defined in docs/api-conventions.md.",
       "status": "not_started",
-      "verification": ["make verify"],
+      "verification": [
+        "make verify"
+      ],
       "evidence": [],
       "notes": "Autonomous loop (topic 8): goals/F06-pagination.goal.md."
     }

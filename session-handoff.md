@@ -5,7 +5,7 @@ end of each session via the `handoff` skill. Keep it short: the next session rea
 
 - **Active feature:** none
 - **State of the work:** clean; baseline green
-- **Exact next step:** pick F04 from `feature_list.json`; plan in plan mode first
+- **Exact next step:** F05 — run the `write-spec` skill to create specs/F05-task-tags.md
 - **Commands to re-verify:** `./init.sh` then `make check`
 - **Open questions for a human:** none
-- **Do not:** start F05/F06 before F04 is passing (WIP = 1)
+- **Do not:** start F06 before F05 is passing (WIP = 1)
