@@ -40,9 +40,12 @@ def list_tasks(
     session: SessionDep,
     status_: Annotated[TaskStatus | None, Query(alias="status")] = None,
     max_priority: Annotated[int | None, Query(ge=1, le=5)] = None,
+    overdue: bool | None = None,
 ) -> Sequence[Task]:
     _require_project(session, project_id)
-    return service.list_tasks(session, project_id, status=status_, max_priority=max_priority)
+    return service.list_tasks(
+        session, project_id, status=status_, max_priority=max_priority, overdue=overdue
+    )
 
 
 @router.get("/tasks/{task_id}", response_model=TaskRead)
