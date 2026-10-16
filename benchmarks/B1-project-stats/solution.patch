@@ -1,0 +1,96 @@
+diff --git a/app/api/projects.py b/app/api/projects.py
+index 5feaa67..1829839 100644
+--- a/app/api/projects.py
++++ b/app/api/projects.py
+@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, status
+ 
+ from app.api.deps import LimitParam, OffsetParam, SessionDep
+ from app.models import Project
+-from app.schemas import Page, ProjectCreate, ProjectRead
++from app.schemas import Page, ProjectCreate, ProjectRead, ProjectStats
+ from app.services import projects as service
+ from app.services.pagination import DEFAULT_LIMIT, paginate
+ 
+@@ -34,3 +34,11 @@ def get_project(project_id: int, session: SessionDep) -> Project:
+     if project is None:
+         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
+     return project
++
++
++@router.get("/{project_id}/stats", response_model=ProjectStats)
++def project_stats(project_id: int, session: SessionDep) -> ProjectStats:
++    if service.get_project(session, project_id) is None:
++        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
++    counts = service.project_stats(session, project_id)
++    return ProjectStats(project_id=project_id, total=sum(counts.values()), counts=counts)
+diff --git a/app/schemas.py b/app/schemas.py
+index 027da45..52f8b04 100644
+--- a/app/schemas.py
++++ b/app/schemas.py
+@@ -102,3 +102,11 @@ class Page[ItemT](BaseModel):
+     total: int
+     limit: int
+     offset: int
++
++
++class ProjectStats(BaseModel):
++    """B1: task counts per status for one project."""
++
++    project_id: int
++    total: int
++    counts: dict[TaskStatus, int]
+diff --git a/app/services/projects.py b/app/services/projects.py
+index 36b64ca..a137bb6 100644
+--- a/app/services/projects.py
++++ b/app/services/projects.py
+@@ -1,10 +1,10 @@
+ from collections.abc import Sequence
+ 
+-from sqlalchemy import Select, select
++from sqlalchemy import Select, func, select
+ from sqlalchemy.exc import IntegrityError
+ from sqlalchemy.orm import Session
+ 
+-from app.models import Project
++from app.models import Project, Task, TaskStatus
+ from app.schemas import ProjectCreate
+ 
+ 
+@@ -34,3 +34,13 @@ def list_projects(session: Session) -> Sequence[Project]:
+ 
+ def get_project(session: Session, project_id: int) -> Project | None:
+     return session.get(Project, project_id)
++
++
++def project_stats(session: Session, project_id: int) -> dict[TaskStatus, int]:
++    """Task count per status; every status is present (0 when none)."""
++    rows = session.execute(
++        select(Task.status, func.count()).where(Task.project_id == project_id).group_by(Task.status)
++    ).all()
++    counts = dict.fromkeys(TaskStatus, 0)
++    counts.update({status: int(n) for status, n in rows})
++    return counts
+diff --git a/tests/test_stats.py b/tests/test_stats.py
+new file mode 100644
+index 0000000..b513278
+--- /dev/null
++++ b/tests/test_stats.py
+@@ -0,0 +1,18 @@
++"""B1 reference solution: project stats."""
++
++from fastapi.testclient import TestClient
++
++
++def test_stats_counts_per_status(client: TestClient, project_id: int) -> None:
++    for status in ("todo", "done", "done"):
++        client.post(f"/api/v1/projects/{project_id}/tasks", json={"title": "t", "status": status})
++    body = client.get(f"/api/v1/projects/{project_id}/stats").json()
++    assert body == {
++        "project_id": project_id,
++        "total": 3,
++        "counts": {"todo": 1, "in_progress": 0, "done": 2},
++    }
++
++
++def test_stats_unknown_project(client: TestClient) -> None:
++    assert client.get("/api/v1/projects/999999/stats").status_code == 404
